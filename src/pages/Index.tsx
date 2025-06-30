@@ -53,6 +53,41 @@ const Index = () => {
     }
   };
 
+  const handleRegenerateField = async (fieldName: keyof UserStory, currentValue: string | string[]) => {
+    if (!generatedStory) return;
+    
+    console.log(`Regenerating ${fieldName}...`);
+    
+    // Simulate API call for regeneration
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Mock regenerated content based on field type
+    let newValue: string | string[];
+    
+    switch (fieldName) {
+      case 'title':
+        newValue = `Updated Story: ${rawInput.split(' ').slice(0, 4).join(' ')} - Enhanced`;
+        break;
+      case 'description':
+        newValue = `As a user, I want to ${rawInput.toLowerCase()} with improved functionality so that I can achieve better results and enhanced user experience.`;
+        break;
+      case 'acceptanceCriteria':
+        newValue = [
+          'Given the user is on the enhanced main page',
+          'When they interact with the improved feature',
+          'Then they should see the updated expected result',
+          'And the system should respond with better performance',
+          'And all accessibility requirements are met'
+        ];
+        break;
+      default:
+        newValue = currentValue;
+    }
+    
+    // Update the story with new content
+    setGeneratedStory(prev => prev ? { ...prev, [fieldName]: newValue } : null);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
       {/* Header */}
@@ -124,7 +159,10 @@ const Index = () => {
           <div className="space-y-6">
             {generatedStory && (
               <>
-                <GeneratedStory story={generatedStory} />
+                <GeneratedStory 
+                  story={generatedStory} 
+                  onRegenerateField={handleRegenerateField}
+                />
                 <AdoIntegration 
                   story={generatedStory} 
                   apiKeys={apiKeys}
