@@ -70,15 +70,27 @@ const Index = () => {
             </div>
           </div>
           
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowConfig(!showConfig)}
-            className="flex items-center gap-2"
-          >
-            <Settings className="w-4 h-4" />
-            Settings
-          </Button>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.location.href = '/wireframe'}
+              className="flex items-center gap-2"
+            >
+              <GitBranch className="w-4 h-4" />
+              View Wireframe
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowConfig(!showConfig)}
+              className="flex items-center gap-2"
+            >
+              <Settings className="w-4 h-4" />
+              Settings
+            </Button>
+          </div>
         </div>
       </div>
 
