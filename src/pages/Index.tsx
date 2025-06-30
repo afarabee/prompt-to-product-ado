@@ -26,14 +26,14 @@ const Index = () => {
   });
 
   const handleGenerate = async () => {
-    if (!rawInput.trim() || !apiKeys.openai) return;
+    if (!rawInput.trim()) return;
     
     setIsGenerating(true);
     try {
       // Simulate API call - in real implementation, this would call OpenAI API
       await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Mock generated story
+      // Mock generated story based on input
       const mockStory: UserStory = {
         title: `User Story: ${rawInput.split(' ').slice(0, 5).join(' ')}`,
         description: `As a user, I want to ${rawInput.toLowerCase()} so that I can achieve my goals more effectively.`,
@@ -98,16 +98,14 @@ const Index = () => {
               onChange={setRawInput}
               onGenerate={handleGenerate}
               isGenerating={isGenerating}
-              disabled={!apiKeys.openai}
+              disabled={false}
             />
             
-            {!apiKeys.openai && (
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <p className="text-amber-800 text-sm">
-                  Please configure your API keys in Settings to start generating stories.
-                </p>
-              </div>
-            )}
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-blue-800 text-sm">
+                📝 <strong>Demo Mode:</strong> This is a stubbed version. Enter any story idea and click "Generate Story" to see the AI-powered interface in action!
+              </p>
+            </div>
           </div>
 
           {/* Right Column - Generated Story & ADO Integration */}
