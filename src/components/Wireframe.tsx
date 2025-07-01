@@ -1,6 +1,5 @@
-
 import React from 'react';
-import { User, Settings, BarChart3, MessageSquare, RefreshCw, Send, Eye, GitBranch, Users, History } from 'lucide-react';
+import { User, Settings, BarChart3, MessageSquare, RefreshCw, Send, Eye, GitBranch, Users, History, Copy, Check, X, AlertCircle } from 'lucide-react';
 
 export const Wireframe = () => {
   return (
@@ -25,7 +24,7 @@ export const Wireframe = () => {
         </div>
       </header>
 
-      <div className="flex h-screen">
+      <div className="flex h-screen relative">
         {/* Sidebar */}
         <aside className="w-64 border-r-2" style={{ backgroundColor: '#CFD4D7', borderColor: '#808384' }}>
           <nav className="p-4 space-y-2">
@@ -145,17 +144,24 @@ export const Wireframe = () => {
                 </div>
               </div>
 
-              {/* Generated Story Preview */}
+              {/* Generated Story Preview with Enhanced Interactions */}
               <div className="space-y-4">
-                <div className="p-6 rounded-lg border-2" style={{ backgroundColor: 'white', borderColor: '#00A0E3' }}>
+                <div className="p-6 rounded-lg border-2 relative" style={{ backgroundColor: 'white', borderColor: '#00A0E3' }}>
                   <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-semibold" style={{ color: '#002153' }}>Generated User Story</h2>
-                    <button className="p-2 rounded hover:bg-blue-50" style={{ color: '#005AA7' }}>
-                      <Eye className="w-4 h-4" />
-                    </button>
+                    <div className="flex gap-2">
+                      <button className="p-2 rounded hover:bg-blue-50 flex items-center gap-1" style={{ color: '#005AA7' }} title="Copy entire story to clipboard">
+                        <Copy className="w-4 h-4" />
+                        <span className="text-xs">Copy</span>
+                      </button>
+                      <button className="p-2 rounded hover:bg-blue-50" style={{ color: '#005AA7' }}>
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                   
                   <div className="space-y-4">
+                    {/* Title Field with Track Changes */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <label className="text-sm font-medium" style={{ color: '#333333' }}>Title</label>
@@ -169,10 +175,19 @@ export const Wireframe = () => {
                         </div>
                       </div>
                       <div className="p-3 rounded border" style={{ backgroundColor: '#FFFFFF', borderColor: '#808384' }}>
-                        <div className="text-sm font-medium">As a [user type], I want [functionality]...</div>
+                        <div className="text-sm font-medium">
+                          As a <span className="bg-green-100 text-green-800 px-1 rounded">product owner</span>, I want 
+                          <span className="bg-red-100 text-red-800 line-through px-1 rounded mx-1">basic functionality</span>
+                          <span className="bg-green-100 text-green-800 px-1 rounded">enhanced user management</span> so that...
+                        </div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">3 changes</span>
+                          <button className="text-xs text-green-600 hover:underline">Preview Changes</button>
+                        </div>
                       </div>
                     </div>
                     
+                    {/* Description Field with Dependency Notification */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <label className="text-sm font-medium" style={{ color: '#333333' }}>Description</label>
@@ -188,8 +203,21 @@ export const Wireframe = () => {
                       <div className="p-3 rounded border" style={{ backgroundColor: '#FFFFFF', borderColor: '#808384' }}>
                         <div className="text-sm">Detailed story description following INVEST criteria...</div>
                       </div>
+                      
+                      {/* Cross-field Dependency Notification */}
+                      <div className="mt-2 p-2 rounded border-l-4 bg-orange-50" style={{ borderColor: '#F97316' }}>
+                        <div className="flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4 text-orange-600" />
+                          <span className="text-sm text-orange-800">Description changed. Regenerate Acceptance Criteria?</span>
+                          <button className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded hover:bg-orange-200">
+                            Yes, Update AC
+                          </button>
+                          <button className="text-xs text-orange-600 hover:underline">Dismiss</button>
+                        </div>
+                      </div>
                     </div>
                     
+                    {/* Acceptance Criteria with Potential Changes Highlight */}
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <label className="text-sm font-medium" style={{ color: '#333333' }}>Acceptance Criteria</label>
@@ -202,12 +230,51 @@ export const Wireframe = () => {
                           </button>
                         </div>
                       </div>
-                      <div className="p-3 rounded border space-y-1" style={{ backgroundColor: '#FFFFFF', borderColor: '#808384' }}>
+                      <div className="p-3 rounded border-2 space-y-1" style={{ backgroundColor: '#FFFFFF', borderColor: '#F97316' }}>
                         <div className="text-sm">• Given [condition], when [action], then [result]</div>
                         <div className="text-sm">• Verify [specific behavior]</div>
                         <div className="text-sm">• Ensure [quality criteria]</div>
+                        <div className="text-xs text-orange-600 mt-1 font-medium">⚠ May need updates due to description changes</div>
                       </div>
                     </div>
+                  </div>
+
+                  {/* Change Preview Panel */}
+                  <div className="mt-4 p-3 rounded border bg-gray-50" style={{ borderColor: '#808384' }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-semibold" style={{ color: '#002153' }}>Pending Changes Preview</h4>
+                      <div className="flex gap-2">
+                        <button className="text-xs bg-green-100 text-green-800 px-3 py-1 rounded hover:bg-green-200">
+                          Accept All
+                        </button>
+                        <button className="text-xs bg-red-100 text-red-800 px-3 py-1 rounded hover:bg-red-200">
+                          Reject All
+                        </button>
+                      </div>
+                    </div>
+                    <div className="space-y-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <input type="checkbox" className="w-3 h-3" defaultChecked />
+                        <span>Add "product owner" to title</span>
+                        <button className="text-green-600 hover:underline">Accept</button>
+                        <button className="text-red-600 hover:underline">Reject</button>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input type="checkbox" className="w-3 h-3" defaultChecked />
+                        <span>Remove "basic functionality"</span>
+                        <button className="text-green-600 hover:underline">Accept</button>
+                        <button className="text-red-600 hover:underline">Reject</button>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <input type="checkbox" className="w-3 h-3" defaultChecked />
+                        <span>Add "enhanced user management"</span>
+                        <button className="text-green-600 hover:underline">Accept</button>
+                        <button className="text-red-600 hover:underline">Reject</button>
+                      </div>
+                    </div>
+                    <button className="mt-2 text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded hover:bg-blue-200">
+                      Apply Selected Changes
+                    </button>
                   </div>
                 </div>
 
@@ -352,6 +419,8 @@ export const Wireframe = () => {
                   <span>✓ Story Templates</span>
                   <span>✓ Version History</span>
                   <span>✓ Mobile Responsive</span>
+                  <span>✓ AI Chat Integration</span>
+                  <span>✓ Track Changes</span>
                 </div>
                 <div className="text-xs" style={{ color: '#808384' }}>
                   Last updated: 2 minutes ago
@@ -360,6 +429,84 @@ export const Wireframe = () => {
             </div>
           </div>
         </main>
+
+        {/* Chat Drawer - Slides out from right */}
+        <div className="fixed right-0 top-16 bottom-0 w-96 bg-white border-l-2 shadow-xl transform translate-x-0 z-20" style={{ borderColor: '#808384' }}>
+          <div className="flex flex-col h-full">
+            {/* Chat Header */}
+            <div className="p-4 border-b" style={{ backgroundColor: '#005AA7', borderColor: '#808384' }}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-white font-semibold">Chat: Description Field</h3>
+                  <p className="text-blue-100 text-sm">Refine this field with AI assistance</p>
+                </div>
+                <button className="text-white hover:bg-blue-600 p-1 rounded">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+            
+            {/* Chat Messages */}
+            <div className="flex-1 overflow-auto p-4 space-y-4">
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <div className="text-sm font-medium text-blue-800 mb-1">AI Assistant</div>
+                <div className="text-sm text-blue-700">
+                  I can help you refine the description field. What specific changes would you like to make?
+                </div>
+              </div>
+              
+              <div className="bg-gray-100 p-3 rounded-lg ml-8">
+                <div className="text-sm font-medium text-gray-800 mb-1">You</div>
+                <div className="text-sm text-gray-700">
+                  Make it more specific about user management features and add acceptance criteria for mobile compatibility
+                </div>
+              </div>
+              
+              <div className="bg-blue-50 p-3 rounded-lg">
+                <div className="text-sm font-medium text-blue-800 mb-1">AI Assistant</div>
+                <div className="text-sm text-blue-700 mb-2">
+                  I suggest updating the description to focus on specific user management features. Here's my proposed change:
+                </div>
+                <div className="text-xs bg-white p-2 rounded border">
+                  <div className="mb-1">Current: "Detailed story description following INVEST criteria..."</div>
+                  <div className="text-green-700">Suggested: "As a product owner, I want comprehensive user management functionality including role assignments, permission controls, and mobile-responsive interface so that I can efficiently manage team access across all devices."</div>
+                </div>
+                <div className="flex gap-2 mt-2">
+                  <button className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded hover:bg-green-200">
+                    Accept Changes
+                  </button>
+                  <button className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded hover:bg-red-200">
+                    Reject Changes
+                  </button>
+                  <button className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded hover:bg-blue-200">
+                    Modify Further
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            {/* Chat Input */}
+            <div className="p-4 border-t" style={{ borderColor: '#808384' }}>
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  placeholder="Describe the changes you want..." 
+                  className="flex-1 p-2 border rounded text-sm" 
+                  style={{ borderColor: '#808384' }}
+                />
+                <button className="px-3 py-2 rounded text-white" style={{ backgroundColor: '#005AA7' }}>
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                💡 Try: "Add more detail about..." or "Make it shorter" or "Focus on security aspects"
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Overlay for drawer */}
+        <div className="fixed inset-0 bg-black bg-opacity-20 z-10"></div>
       </div>
     </div>
   );
