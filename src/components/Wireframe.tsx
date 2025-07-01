@@ -95,9 +95,11 @@ export const Wireframe = () => {
                       <label className="block text-sm font-medium mb-2" style={{ color: '#333333' }}>
                         Story Input
                       </label>
-                      <div className="h-32 p-3 border rounded-lg" style={{ backgroundColor: '#FFFFFF', borderColor: '#808384' }}>
-                        <div className="text-sm text-gray-400">Enter raw user story idea or prompt here...</div>
-                      </div>
+                      <textarea 
+                        className="w-full h-32 p-3 border rounded-lg resize-none" 
+                        style={{ backgroundColor: '#FFFFFF', borderColor: '#808384' }}
+                        placeholder="Enter raw user story idea or prompt here..."
+                      />
                     </div>
                     
                     <div className="grid grid-cols-2 gap-4">
@@ -158,10 +160,10 @@ export const Wireframe = () => {
                       <div className="flex items-center justify-between mb-2">
                         <label className="text-sm font-medium" style={{ color: '#333333' }}>Title</label>
                         <div className="flex gap-1">
-                          <button className="p-1 rounded hover:bg-blue-50">
+                          <button className="p-1 rounded hover:bg-blue-50" title="Regenerate Title">
                             <RefreshCw className="w-3 h-3" style={{ color: '#005AA7' }} />
                           </button>
-                          <button className="p-1 rounded hover:bg-blue-50">
+                          <button className="p-1 rounded hover:bg-blue-50" title="Chat with this field">
                             <MessageSquare className="w-3 h-3" style={{ color: '#005AA7' }} />
                           </button>
                         </div>
@@ -175,10 +177,10 @@ export const Wireframe = () => {
                       <div className="flex items-center justify-between mb-2">
                         <label className="text-sm font-medium" style={{ color: '#333333' }}>Description</label>
                         <div className="flex gap-1">
-                          <button className="p-1 rounded hover:bg-blue-50">
+                          <button className="p-1 rounded hover:bg-blue-50" title="Regenerate Description">
                             <RefreshCw className="w-3 h-3" style={{ color: '#005AA7' }} />
                           </button>
-                          <button className="p-1 rounded hover:bg-blue-50">
+                          <button className="p-1 rounded hover:bg-blue-50" title="Chat with this field">
                             <MessageSquare className="w-3 h-3" style={{ color: '#005AA7' }} />
                           </button>
                         </div>
@@ -192,10 +194,10 @@ export const Wireframe = () => {
                       <div className="flex items-center justify-between mb-2">
                         <label className="text-sm font-medium" style={{ color: '#333333' }}>Acceptance Criteria</label>
                         <div className="flex gap-1">
-                          <button className="p-1 rounded hover:bg-blue-50">
+                          <button className="p-1 rounded hover:bg-blue-50" title="Regenerate Criteria">
                             <RefreshCw className="w-3 h-3" style={{ color: '#005AA7' }} />
                           </button>
-                          <button className="p-1 rounded hover:bg-blue-50">
+                          <button className="p-1 rounded hover:bg-blue-50" title="Chat with this field">
                             <MessageSquare className="w-3 h-3" style={{ color: '#005AA7' }} />
                           </button>
                         </div>
