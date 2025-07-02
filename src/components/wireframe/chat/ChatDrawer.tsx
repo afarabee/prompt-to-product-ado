@@ -106,7 +106,7 @@ Suggested: "As a product owner, I want comprehensive user management functionali
         )}
 
         {/* Chat Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+        <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ height: 'calc(100vh - 180px)' }}>
           {messages.map((message, index) => (
             <ChatMessage 
               key={index} 
@@ -117,13 +117,9 @@ Suggested: "As a product owner, I want comprehensive user management functionali
           ))}
         </div>
 
-        {/* Input Area */}
+        {/* Input Area at Bottom */}
         <div className="p-4 border-t">
-          <div className="flex items-center gap-2 mb-2 text-xs text-gray-600">
-            <Lightbulb className="w-3 h-3" />
-            <span>Try: "Add more detail about..." or "Make it shorter" or "Focus on security aspects"</span>
-          </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 mb-2">
             <input
               type="text"
               value={inputValue}
@@ -139,6 +135,11 @@ Suggested: "As a product owner, I want comprehensive user management functionali
             >
               <Send className="w-4 h-4" />
             </button>
+          </div>
+          {/* Tooltip below input */}
+          <div className="flex items-center gap-2 text-xs text-gray-600">
+            <Lightbulb className="w-3 h-3" />
+            <span>Try: "Add more detail about..." or "Make it shorter" or "Focus on security aspects"</span>
           </div>
         </div>
       </div>

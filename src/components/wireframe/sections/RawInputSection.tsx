@@ -28,7 +28,7 @@ export const RawInputSection = () => {
             <textarea 
               className="w-full h-32 p-3 border rounded-lg resize-none" 
               style={{ backgroundColor: '#FFFFFF', borderColor: '#808384' }}
-              placeholder="Enter raw user story idea or prompt here..."
+              placeholder="Describe the feature, idea, or pain point in plain language.&#10;Examples:&#10;• Users can't find archived tasks&#10;• Add a button to duplicate a request&#10;• Make reports exportable to CSV&#10;Don't worry about the format--AI will handle that."
             />
           </div>
           
@@ -42,9 +42,6 @@ export const RawInputSection = () => {
               placeholder="Write a custom prompt to guide the AI. This builds on any raw input or backend product context provided."
               rows={6}
             />
-            <div className="text-xs text-gray-500 mt-1">
-              Write a custom prompt to guide the AI. This builds on any raw input or backend product context provided.
-            </div>
           </div>
           
           <div>
@@ -57,6 +54,9 @@ export const RawInputSection = () => {
               className="w-full p-2 border rounded" 
               style={{ borderColor: '#808384' }}
             />
+            <div className="text-xs text-gray-500 mt-1">
+              Optional. Upload screenshots, mockups, docs, or other references. Accepted formats: PDF, PNG, DOCX, TXT. Max 10MB.
+            </div>
           </div>
           
           <button className="w-full p-3 rounded-lg font-medium text-white flex items-center justify-center gap-2" style={{ backgroundColor: '#005AA7' }}>

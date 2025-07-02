@@ -11,36 +11,27 @@ export const ADOIntegrationSection = () => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: '#333333' }}>
-              ADO Project
+              Iteration (Optional)
             </label>
             <select className="w-full p-2 border rounded" style={{ borderColor: '#808384' }}>
-              <option>Project Alpha</option>
-              <option>Project Beta</option>
-              <option>Project Gamma</option>
+              <option value="">Select Iteration</option>
+              <option>Sprint 1</option>
+              <option>Sprint 2</option>
+              <option>Sprint 3</option>
             </select>
           </div>
           
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: '#333333' }}>
-              Backlog
+              Tags (Optional)
             </label>
-            <select className="w-full p-2 border rounded" style={{ borderColor: '#808384' }}>
-              <option>Sprint Backlog</option>
-              <option>Product Backlog</option>
-              <option>Epic Backlog</option>
-            </select>
+            <input 
+              type="text"
+              className="w-full p-2 border rounded" 
+              style={{ borderColor: '#808384' }}
+              placeholder="tag1, tag2, tag3"
+            />
           </div>
-        </div>
-        
-        <div>
-          <label className="block text-sm font-medium mb-2" style={{ color: '#333333' }}>
-            Assignee
-          </label>
-          <select className="w-full p-2 border rounded" style={{ borderColor: '#808384' }}>
-            <option>John Doe (Developer)</option>
-            <option>Jane Smith (Designer)</option>
-            <option>Mike Johnson (Tester)</option>
-          </select>
         </div>
         
         <div className="flex gap-3 pt-2">
@@ -58,7 +49,7 @@ export const ADOIntegrationSection = () => {
       <div className="mt-4 p-3 rounded border" style={{ backgroundColor: '#CFD4D7', borderColor: '#808384' }}>
         <div className="text-xs font-medium mb-1" style={{ color: '#002153' }}>Confirmation Dialog</div>
         <div className="text-xs" style={{ color: '#333333' }}>
-          "Are you sure you want to create this work item in Project Alpha?"
+          "Are you sure you want to create this work item in Azure DevOps?"
         </div>
       </div>
     </div>

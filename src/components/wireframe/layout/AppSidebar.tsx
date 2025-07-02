@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FileText } from 'lucide-react';
+import { FileText, Users } from 'lucide-react';
 
 export const AppSidebar = () => {
   return (
@@ -12,6 +12,13 @@ export const AppSidebar = () => {
           <div className="flex items-center gap-2">
             <FileText className="w-4 h-4" />
             Story Generator
+          </div>
+        </button>
+        
+        <button className="w-full text-left p-3 rounded-lg hover:bg-gray-200" style={{ color: '#333333' }}>
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            User Management
           </div>
         </button>
         
