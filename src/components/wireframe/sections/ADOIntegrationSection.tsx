@@ -11,7 +11,7 @@ export const ADOIntegrationSection = () => {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: '#333333' }}>
-              Iteration (Optional)
+              Iteration
             </label>
             <select className="w-full p-2 border rounded" style={{ borderColor: '#808384' }}>
               <option value="">Select Iteration</option>
@@ -23,7 +23,7 @@ export const ADOIntegrationSection = () => {
           
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: '#333333' }}>
-              Tags (Optional)
+              Tags
             </label>
             <input 
               type="text"

@@ -1,8 +1,16 @@
 
 import React from 'react';
-import { FileText, Users } from 'lucide-react';
+import { FileText, Users, History } from 'lucide-react';
 
-export const AppSidebar = () => {
+interface AppSidebarProps {
+  onVersionHistoryClick?: () => void;
+  onUserManagementClick?: () => void;
+}
+
+export const AppSidebar: React.FC<AppSidebarProps> = ({ 
+  onVersionHistoryClick, 
+  onUserManagementClick 
+}) => {
   return (
     <aside className="w-64 border-r-2" style={{ backgroundColor: '#CFD4D7', borderColor: '#808384' }}>
       <nav className="p-4 space-y-2">
@@ -15,15 +23,26 @@ export const AppSidebar = () => {
           </div>
         </button>
         
-        <button className="w-full text-left p-3 rounded-lg hover:bg-gray-200" style={{ color: '#333333' }}>
+        <button 
+          className="w-full text-left p-3 rounded-lg hover:bg-gray-200" 
+          style={{ color: '#333333' }}
+          onClick={onVersionHistoryClick}
+        >
+          <div className="flex items-center gap-2">
+            <History className="w-4 h-4" />
+            Version History
+          </div>
+        </button>
+        
+        <button 
+          className="w-full text-left p-3 rounded-lg hover:bg-gray-200" 
+          style={{ color: '#333333' }}
+          onClick={onUserManagementClick}
+        >
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4" />
             User Management
           </div>
-        </button>
-        
-        <button className="w-full text-left p-3 rounded-lg hover:bg-gray-200" style={{ color: '#333333' }}>
-          Version History
         </button>
       </nav>
     </aside>

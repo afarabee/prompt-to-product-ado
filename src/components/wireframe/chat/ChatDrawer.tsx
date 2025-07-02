@@ -16,16 +16,32 @@ export const ChatDrawer = () => {
       setActiveField(fieldName);
       setActiveFieldLabel(label);
       setIsOpen(true);
-      setMessages([]);
-      setInputValue('');
       
-      // Add initial AI message
-      setTimeout(() => {
-        setMessages([{
-          type: 'ai',
-          content: `I can help you refine the ${label.toLowerCase()} field. What specific changes would you like to make?`
-        }]);
-      }, 300);
+      // Add sample conversation data
+      const sampleMessages = [
+        {
+          type: 'ai' as const,
+          content: `Hi! I'm here to help you refine the ${label.toLowerCase()} field. What specific changes would you like to make?`
+        },
+        {
+          type: 'user' as const,
+          content: 'Can you make the description more focused on security aspects?'
+        },
+        {
+          type: 'ai' as const,
+          content: `I suggest updating the ${label.toLowerCase()} to emphasize security features. Here's my proposed change:
+
+Current: "As a product owner, I want enhanced user management so that users can securely manage access."
+
+Suggested: "As a product owner, I want comprehensive user management functionality with robust security controls, including multi-factor authentication, role-based permissions, and audit logging so that I can ensure secure access management across the platform."
+
+This change adds specific security elements like MFA, role-based permissions, and audit logging.`,
+          hasActions: true
+        }
+      ];
+      
+      setMessages(sampleMessages);
+      setInputValue('');
     };
 
     window.addEventListener('openFieldChat', handleOpenFieldChat as EventListener);
@@ -48,7 +64,7 @@ export const ChatDrawer = () => {
         type: 'ai', 
         content: `I suggest updating the ${activeFieldLabel?.toLowerCase()} to focus on specific user management features. Here's my proposed change:
 
-Current: "Detailed story description following INVEST criteria..."
+Current: "Basic user management functionality..."
 
 Suggested: "As a product owner, I want comprehensive user management functionality, including role assignments, permission controls, and mobile responsive interface so that I can efficiently manage team access across all devices."`,
         hasActions: true
@@ -68,10 +84,10 @@ Suggested: "As a product owner, I want comprehensive user management functionali
 
   return (
     <>
-      {/* Chat Toggle Button */}
+      {/* Chat Toggle Button - Repositioned */}
       <button
         onClick={toggleChat}
-        className="fixed top-20 left-280 z-50 p-2 rounded-lg font-medium text-white"
+        className="fixed top-32 left-280 z-50 p-2 rounded-lg font-medium text-white"
         style={{ backgroundColor: '#005AA7', left: '280px' }}
         title="Open AI Chat"
       >
@@ -106,7 +122,7 @@ Suggested: "As a product owner, I want comprehensive user management functionali
         )}
 
         {/* Chat Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ height: 'calc(100vh - 180px)' }}>
+        <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ height: 'calc(100vh - 200px)' }}>
           {messages.map((message, index) => (
             <ChatMessage 
               key={index} 
@@ -118,7 +134,7 @@ Suggested: "As a product owner, I want comprehensive user management functionali
         </div>
 
         {/* Input Area at Bottom */}
-        <div className="p-4 border-t">
+        <div className="p-4 border-t bg-white">
           <div className="flex gap-2 mb-2">
             <input
               type="text"
@@ -136,8 +152,8 @@ Suggested: "As a product owner, I want comprehensive user management functionali
               <Send className="w-4 h-4" />
             </button>
           </div>
-          {/* Tooltip below input */}
-          <div className="flex items-center gap-2 text-xs text-gray-600">
+          {/* Tooltip below input - positioned to avoid cutoff */}
+          <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
             <Lightbulb className="w-3 h-3" />
             <span>Try: "Add more detail about..." or "Make it shorter" or "Focus on security aspects"</span>
           </div>
