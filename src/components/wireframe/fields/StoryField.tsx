@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { RefreshCw, MessageSquare, Copy, Eye } from 'lucide-react';
+import { RefreshCw, Copy, Eye, MessageSquare } from 'lucide-react';
 import { DiffHighlight } from '../ui/DiffHighlight';
 
 interface StoryFieldProps {
@@ -23,6 +23,8 @@ export const StoryField: React.FC<StoryFieldProps> = ({
   const openFieldChat = () => {
     console.log(`Opening chat for ${fieldName}`);
     // This would trigger the chat drawer to open with field context
+    const event = new CustomEvent('openFieldChat', { detail: { fieldName, label } });
+    window.dispatchEvent(event);
   };
 
   return (
@@ -32,11 +34,11 @@ export const StoryField: React.FC<StoryFieldProps> = ({
           <label className="text-sm font-medium" style={{ color: '#333333' }}>{label}</label>
           <button 
             onClick={openFieldChat}
-            className="text-xs text-blue-600 hover:underline ml-2"
+            className="p-1 rounded hover:bg-blue-50" 
+            title={`Chat with AI about ${label}`}
             style={{ color: '#005AA7' }}
-            title="Chat with AI about this field"
           >
-            ?AI Chat
+            <MessageSquare className="w-4 h-4" />
           </button>
         </div>
         <div className="flex gap-1">
@@ -57,7 +59,7 @@ export const StoryField: React.FC<StoryFieldProps> = ({
         {hasChanges ? (
           <DiffHighlight text={value} />
         ) : (
-          <div className="text-sm">{value}</div>
+          <div className="text-sm whitespace-pre-wrap">{value}</div>
         )}
         
         {hasChanges && (
@@ -65,10 +67,6 @@ export const StoryField: React.FC<StoryFieldProps> = ({
             <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">{changeCount} changes</span>
             <button className="text-xs text-green-600 hover:underline">Preview Changes</button>
           </div>
-        )}
-        
-        {needsUpdate && (
-          <div className="text-xs text-orange-600 mt-1 font-medium">⚠ May need updates due to description changes</div>
         )}
       </div>
     </div>
