@@ -3,12 +3,24 @@ import React, { useState, useEffect } from 'react';
 import { X, Send, Lightbulb } from 'lucide-react';
 import { ChatMessage } from './ChatMessage';
 
-export const ChatDrawer = () => {
+interface ChatDrawerProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen: externalIsOpen, onClose }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeField, setActiveField] = useState<string | null>(null);
   const [activeFieldLabel, setActiveFieldLabel] = useState<string | null>(null);
   const [messages, setMessages] = useState<Array<{type: 'user' | 'ai', content: string, hasActions?: boolean}>>([]);
   const [inputValue, setInputValue] = useState('');
+
+  // Handle external control of drawer
+  useEffect(() => {
+    if (externalIsOpen !== undefined) {
+      setIsOpen(externalIsOpen);
+    }
+  }, [externalIsOpen]);
 
   useEffect(() => {
     const handleOpenFieldChat = (event: CustomEvent) => {
@@ -49,7 +61,11 @@ This change adds specific security elements like MFA, role-based permissions, an
   }, []);
 
   const toggleChat = () => {
-    setIsOpen(!isOpen);
+    const newIsOpen = !isOpen;
+    setIsOpen(newIsOpen);
+    if (!newIsOpen && onClose) {
+      onClose();
+    }
   };
 
   const sendMessage = () => {
@@ -84,16 +100,6 @@ Suggested: "As a product owner, I want comprehensive user management functionali
 
   return (
     <>
-      {/* Chat Toggle Button - Repositioned */}
-      <button
-        onClick={toggleChat}
-        className="fixed top-32 left-280 z-50 p-2 rounded-lg font-medium text-white"
-        style={{ backgroundColor: '#005AA7', left: '280px' }}
-        title="Open AI Chat"
-      >
-        AI Chat
-      </button>
-
       {/* Chat Drawer */}
       <div 
         className={`fixed top-0 left-0 h-full bg-white shadow-lg transform transition-transform duration-300 z-40 ${

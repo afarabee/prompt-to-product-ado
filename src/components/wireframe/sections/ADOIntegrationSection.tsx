@@ -2,13 +2,17 @@
 import React from 'react';
 import { GitBranch, Eye } from 'lucide-react';
 
-export const ADOIntegrationSection = () => {
+interface ADOIntegrationSectionProps {
+  previewMode?: boolean;
+}
+
+export const ADOIntegrationSection: React.FC<ADOIntegrationSectionProps> = ({ previewMode = false }) => {
   return (
     <div className="p-6 rounded-lg border-2" style={{ backgroundColor: 'white', borderColor: '#808384' }}>
       <h2 className="text-lg font-semibold mb-4" style={{ color: '#002153' }}>Azure DevOps Integration</h2>
       
       <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium mb-2" style={{ color: '#333333' }}>
               Iteration
@@ -31,6 +35,22 @@ export const ADOIntegrationSection = () => {
               style={{ borderColor: '#808384' }}
               placeholder="tag1, tag2, tag3"
             />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2" style={{ color: '#333333' }}>
+              Story Point Estimate
+            </label>
+            <input 
+              type="text"
+              className="w-full p-2 border rounded" 
+              style={{ borderColor: '#808384' }}
+              placeholder={previewMode ? "" : "5"}
+              defaultValue={previewMode ? "" : "5"}
+            />
+            <div className="text-xs text-gray-500 mt-1">
+              Suggested by AI. You may edit or leave this blank.
+            </div>
           </div>
         </div>
         

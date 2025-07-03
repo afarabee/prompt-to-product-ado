@@ -12,15 +12,34 @@ export const AppLayout = () => {
   const [isInputCollapsed, setIsInputCollapsed] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showUserManagement, setShowUserManagement] = useState(false);
+  const [showAIChat, setShowAIChat] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: 'Arial, sans-serif' }}>
       <AppHeader />
       
+      <div className="flex items-center gap-4 p-4 border-b">
+        <button
+          onClick={() => setPreviewMode(!previewMode)}
+          className={`px-4 py-2 rounded-lg font-medium ${
+            previewMode 
+              ? 'bg-blue-100 text-blue-800 border border-blue-300' 
+              : 'bg-gray-100 text-gray-800 border border-gray-300'
+          }`}
+        >
+          {previewMode ? 'Preview Mode: ON' : 'Preview Mode: OFF'}
+        </button>
+        <span className="text-sm text-gray-600">
+          {previewMode ? 'Testing layout without sample data' : 'Normal mode with sample data'}
+        </span>
+      </div>
+      
       <div className="flex h-screen">
         <AppSidebar 
           onVersionHistoryClick={() => setShowVersionHistory(true)}
           onUserManagementClick={() => setShowUserManagement(true)}
+          onAIChatClick={() => setShowAIChat(true)}
         />
         
         <main className="flex-1 overflow-auto">
@@ -29,14 +48,18 @@ export const AppLayout = () => {
               <RawInputSection 
                 isCollapsed={isInputCollapsed}
                 onToggleCollapse={setIsInputCollapsed}
+                previewMode={previewMode}
               />
-              <GeneratedStorySection />
+              <GeneratedStorySection previewMode={previewMode} />
             </div>
           </div>
         </main>
       </div>
       
-      <ChatDrawer />
+      <ChatDrawer 
+        isOpen={showAIChat}
+        onClose={() => setShowAIChat(false)}
+      />
       
       <VersionHistorySidebar 
         isOpen={showVersionHistory}
