@@ -7,6 +7,7 @@ import { GeneratedStorySection } from '../sections/GeneratedStorySection';
 import { ChatDrawer } from '../chat/ChatDrawer';
 import { VersionHistorySidebar } from '../sidebars/VersionHistorySidebar';
 import { UserManagementModal } from '../modals/UserManagementModal';
+import { DependencyNotification } from '../fields/DependencyNotification';
 
 export const AppLayout = () => {
   const [isInputCollapsed, setIsInputCollapsed] = useState(false);
@@ -26,10 +27,67 @@ export const AppLayout = () => {
     storyPointEstimate: ''
   });
 
+  // Dependency tracking state
+  const [dependencies, setDependencies] = useState<{
+    sourceField: string;
+    targetField: string;
+    show: boolean;
+  } | null>(null);
+
   // Clear all fields when preview mode toggles
   useEffect(() => {
     clearAllFields();
   }, [previewMode]);
+
+  // Handle AI field updates
+  useEffect(() => {
+    const handleUpdateFieldFromAI = (event: CustomEvent) => {
+      const { fieldName, action, suggestedContent } = event.detail;
+      
+      setFieldValues(prev => {
+        const currentValue = prev[fieldName as keyof typeof prev];
+        let newValue = '';
+        
+        switch (action) {
+          case 'replace':
+            newValue = suggestedContent;
+            break;
+          case 'append':
+            newValue = currentValue ? `${currentValue}\n\n${suggestedContent}` : suggestedContent;
+            break;
+          case 'edit':
+            // For now, just append - could open inline editor in future
+            newValue = currentValue ? `${currentValue}\n\n${suggestedContent}` : suggestedContent;
+            break;
+          default:
+            return prev;
+        }
+        
+        return { ...prev, [fieldName]: newValue };
+      });
+    };
+
+    window.addEventListener('updateFieldFromAI', handleUpdateFieldFromAI as EventListener);
+    return () => window.removeEventListener('updateFieldFromAI', handleUpdateFieldFromAI as EventListener);
+  }, []);
+
+  const handleDependencyClick = () => {
+    if (dependencies) {
+      const targetFieldName = dependencies.targetField === 'Description' ? 'description' : 'acceptanceCriteria';
+      const event = new CustomEvent('openFieldChat', { 
+        detail: { 
+          fieldName: targetFieldName, 
+          label: dependencies.targetField 
+        } 
+      });
+      window.dispatchEvent(event);
+      setDependencies(null);
+    }
+  };
+
+  const handleDependencyDismiss = () => {
+    setDependencies(null);
+  };
 
   const clearAllFields = () => {
     setFieldValues({
@@ -44,7 +102,23 @@ export const AppLayout = () => {
   };
 
   const handleFieldChange = (fieldName: keyof typeof fieldValues, value: string) => {
+    const previousValue = fieldValues[fieldName];
     setFieldValues(prev => ({ ...prev, [fieldName]: value }));
+    
+    // Check for field dependencies
+    if (fieldName === 'description' && previousValue !== value && fieldValues.acceptanceCriteria) {
+      setDependencies({
+        sourceField: 'Description',
+        targetField: 'Acceptance Criteria',
+        show: true
+      });
+    } else if (fieldName === 'acceptanceCriteria' && previousValue !== value && fieldValues.description) {
+      setDependencies({
+        sourceField: 'Acceptance Criteria',
+        targetField: 'Description',
+        show: true
+      });
+    }
   };
 
   const handleGenerateStory = () => {
@@ -123,6 +197,14 @@ export const AppLayout = () => {
                 onAcceptanceCriteriaChange={(value) => handleFieldChange('acceptanceCriteria', value)}
                 onStoryPointEstimateChange={(value) => handleFieldChange('storyPointEstimate', value)}
               />
+              {dependencies?.show && (
+                <DependencyNotification
+                  sourceField={dependencies.sourceField}
+                  targetField={dependencies.targetField}
+                  onClickField={handleDependencyClick}
+                  onDismiss={handleDependencyDismiss}
+                />
+              )}
             </div>
           </div>
         </main>

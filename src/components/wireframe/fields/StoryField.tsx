@@ -24,6 +24,19 @@ export const StoryField: React.FC<StoryFieldProps> = ({
   helperText = '',
   onChange
 }) => {
+  const getTooltipText = () => {
+    switch (fieldName) {
+      case 'description':
+        return "Ask AI to generate or improve the story description based on your product context.";
+      case 'acceptanceCriteria':
+        return "Use AI to suggest testable criteria based on the story description.";
+      case 'storyPointEstimate':
+        return "AI will suggest a value, but you can override it. This value is not required.";
+      default:
+        return `Chat with AI about ${label}`;
+    }
+  };
+
   const openFieldChat = () => {
     console.log(`Opening chat for ${fieldName}`);
     const event = new CustomEvent('openFieldChat', { detail: { fieldName, label } });
@@ -49,7 +62,7 @@ export const StoryField: React.FC<StoryFieldProps> = ({
             <button 
               onClick={openFieldChat}
               className="p-1 rounded hover:bg-blue-50" 
-              title={`Chat with AI about ${label}`}
+              title={getTooltipText()}
               style={{ color: '#005AA7' }}
             >
               <MessageSquare className="w-4 h-4" />

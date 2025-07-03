@@ -12,7 +12,8 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen: externalIsOpen, 
   const [isOpen, setIsOpen] = useState(false);
   const [activeField, setActiveField] = useState<string | null>(null);
   const [activeFieldLabel, setActiveFieldLabel] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Array<{type: 'user' | 'ai', content: string, hasActions?: boolean}>>([]);
+  const [messages, setMessages] = useState<Array<{type: 'user' | 'ai', content: string, hasActions?: boolean, currentContent?: string, suggestedContent?: string}>>([]);
+  const [showConfirmation, setShowConfirmation] = useState(false);
   const [inputValue, setInputValue] = useState('');
 
   // Handle external control of drawer
@@ -83,38 +84,52 @@ This change adds specific security elements like MFA, role-based permissions, an
     setMessages(prev => [...prev, { type: 'user', content: inputValue }]);
     setInputValue('');
     
-    // Simulate AI response with Accept/Reject buttons
+    // Simulate AI response with Current/Suggested format
     setTimeout(() => {
+      const currentContent = "Basic user management functionality...";
+      const suggestedContent = "As a product owner, I want comprehensive user management functionality, including role assignments, permission controls, and mobile responsive interface so that I can efficiently manage team access across all devices.";
+      
       setMessages(prev => [...prev, { 
         type: 'ai', 
-        content: `I suggest updating the ${activeFieldLabel?.toLowerCase()} to focus on specific user management features. Here's my proposed change:
-
-Current: "Basic user management functionality..."
-
-Suggested: "As a product owner, I want comprehensive user management functionality, including role assignments, permission controls, and mobile responsive interface so that I can efficiently manage team access across all devices."`,
-        hasActions: true
+        content: `I suggest updating the ${activeFieldLabel?.toLowerCase()} to focus on specific user management features.`,
+        hasActions: true,
+        currentContent,
+        suggestedContent
       }]);
     }, 1000);
   };
 
-  const handleAcceptChanges = () => {
-    console.log('Accepting changes for', activeField);
-    // Here you would apply the changes to the actual field
+  const handleAcceptChanges = (action: 'replace' | 'append' | 'edit') => {
+    console.log(`${action} changes for`, activeField);
+    
+    // Dispatch event to update the field
+    const event = new CustomEvent('updateFieldFromAI', { 
+      detail: { 
+        fieldName: activeField, 
+        action, 
+        suggestedContent: "Enhanced user story content..." // This would be the actual AI suggestion
+      } 
+    });
+    window.dispatchEvent(event);
+    
+    // Show confirmation message
+    setShowConfirmation(true);
+    setTimeout(() => setShowConfirmation(false), 3000);
   };
 
   const handleRejectChanges = () => {
     console.log('Rejecting changes for', activeField);
-    // Here you would dismiss the suggestion
+    // Simply dismiss the suggestion without changes
   };
 
   return (
     <>
       {/* Chat Drawer */}
       <div 
-        className={`fixed top-0 left-0 h-full bg-white shadow-lg transform transition-transform duration-300 z-40 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-0 right-0 h-full bg-white shadow-lg transform transition-transform duration-300 z-40 ${
+          isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
-        style={{ width: '360px' }}
+        style={{ width: '400px' }}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b" style={{ backgroundColor: '#005AA7' }}>
@@ -133,6 +148,12 @@ Suggested: "As a product owner, I want comprehensive user management functionali
         {activeFieldLabel && (
           <div className="p-3 bg-blue-50 border-b text-sm text-blue-800">
             Refine this field with AI assistance
+          </div>
+        )}
+
+        {showConfirmation && (
+          <div className="p-3 bg-green-50 border-b text-sm text-green-800">
+            ✅ Your field has been updated with AI suggestions.
           </div>
         )}
 
