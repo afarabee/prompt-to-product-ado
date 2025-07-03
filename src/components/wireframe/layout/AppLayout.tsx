@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppHeader } from './AppHeader';
 import { AppSidebar } from './AppSidebar';
 import { RawInputSection } from '../sections/RawInputSection';
@@ -16,14 +16,58 @@ export const AppLayout = () => {
   const [previewMode, setPreviewMode] = useState(false);
   const [storyGenerated, setStoryGenerated] = useState(false);
 
+  // Field values state
+  const [fieldValues, setFieldValues] = useState({
+    storyInput: '',
+    customPrompt: '',
+    title: '',
+    description: '',
+    acceptanceCriteria: '',
+    storyPointEstimate: ''
+  });
+
+  // Clear all fields when preview mode toggles
+  useEffect(() => {
+    clearAllFields();
+  }, [previewMode]);
+
+  const clearAllFields = () => {
+    setFieldValues({
+      storyInput: '',
+      customPrompt: '',
+      title: '',
+      description: '',
+      acceptanceCriteria: '',
+      storyPointEstimate: ''
+    });
+    setStoryGenerated(false);
+  };
+
+  const handleFieldChange = (fieldName: keyof typeof fieldValues, value: string) => {
+    setFieldValues(prev => ({ ...prev, [fieldName]: value }));
+  };
+
   const handleGenerateStory = () => {
     if (previewMode) {
+      // Generate sample data only in Preview Mode ON
+      setFieldValues(prev => ({
+        ...prev,
+        title: "Enhanced User Management System",
+        description: "As a product owner, I want comprehensive user management functionality, including role assignments, permission controls, and mobile responsive interface so that I can efficiently manage team access across all devices.",
+        acceptanceCriteria: "• User can assign and modify roles for team members\n• System displays confirmation when permissions are updated\n• Interface adapts to mobile devices with touch-friendly controls\n• Admin can export user access reports in CSV format\n• All user management actions are logged for audit purposes",
+        storyPointEstimate: "5"
+      }));
       setStoryGenerated(true);
     }
+    // In Preview Mode OFF, button is functional but doesn't populate fields
   };
 
   const handleStartOver = () => {
-    setStoryGenerated(false);
+    clearAllFields();
+  };
+
+  const handlePreviewModeToggle = () => {
+    setPreviewMode(!previewMode);
   };
 
   return (
@@ -32,7 +76,7 @@ export const AppLayout = () => {
       
       <div className="flex items-center gap-4 p-4 border-b">
         <button
-          onClick={() => setPreviewMode(!previewMode)}
+          onClick={handlePreviewModeToggle}
           className={`px-4 py-2 rounded-lg font-medium ${
             previewMode 
               ? 'bg-blue-100 text-blue-800 border border-blue-300' 
@@ -62,10 +106,22 @@ export const AppLayout = () => {
                 previewMode={previewMode}
                 onGenerateStory={handleGenerateStory}
                 onStartOver={handleStartOver}
+                storyInput={fieldValues.storyInput}
+                customPrompt={fieldValues.customPrompt}
+                onStoryInputChange={(value) => handleFieldChange('storyInput', value)}
+                onCustomPromptChange={(value) => handleFieldChange('customPrompt', value)}
               />
               <GeneratedStorySection 
                 previewMode={previewMode} 
                 storyGenerated={storyGenerated}
+                title={fieldValues.title}
+                description={fieldValues.description}
+                acceptanceCriteria={fieldValues.acceptanceCriteria}
+                storyPointEstimate={fieldValues.storyPointEstimate}
+                onTitleChange={(value) => handleFieldChange('title', value)}
+                onDescriptionChange={(value) => handleFieldChange('description', value)}
+                onAcceptanceCriteriaChange={(value) => handleFieldChange('acceptanceCriteria', value)}
+                onStoryPointEstimateChange={(value) => handleFieldChange('storyPointEstimate', value)}
               />
             </div>
           </div>

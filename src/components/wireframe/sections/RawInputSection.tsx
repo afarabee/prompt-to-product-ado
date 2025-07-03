@@ -10,6 +10,10 @@ interface RawInputSectionProps {
   previewMode?: boolean;
   onGenerateStory?: () => void;
   onStartOver?: () => void;
+  storyInput: string;
+  customPrompt: string;
+  onStoryInputChange: (value: string) => void;
+  onCustomPromptChange: (value: string) => void;
 }
 
 export const RawInputSection: React.FC<RawInputSectionProps> = ({ 
@@ -17,25 +21,17 @@ export const RawInputSection: React.FC<RawInputSectionProps> = ({
   onToggleCollapse,
   previewMode = false,
   onGenerateStory,
-  onStartOver
+  onStartOver,
+  storyInput,
+  customPrompt,
+  onStoryInputChange,
+  onCustomPromptChange
 }) => {
   const [startOver, setStartOver] = useState(false);
-  const [showHelperText, setShowHelperText] = useState({ storyInput: true, customPrompt: true });
 
   const handleStartOver = () => {
-    // Clear all input fields and local storage
-    const inputs = document.querySelectorAll('input, textarea');
-    inputs.forEach((input: Element) => {
-      if (input instanceof HTMLInputElement || input instanceof HTMLTextAreaElement) {
-        input.value = '';
-      }
-    });
-    
     // Clear any stored data from local storage
     localStorage.removeItem('storyBuilderData');
-    
-    // Reset helper text visibility
-    setShowHelperText({ storyInput: true, customPrompt: true });
     
     setStartOver(true);
     setTimeout(() => setStartOver(false), 100);
@@ -45,15 +41,11 @@ export const RawInputSection: React.FC<RawInputSectionProps> = ({
   };
 
   const handleStoryInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (previewMode && e.target.value.trim() !== '') {
-      setShowHelperText(prev => ({ ...prev, storyInput: false }));
-    }
+    onStoryInputChange(e.target.value);
   };
 
   const handleCustomPromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (previewMode && e.target.value.trim() !== '') {
-      setShowHelperText(prev => ({ ...prev, customPrompt: false }));
-    }
+    onCustomPromptChange(e.target.value);
   };
 
   const handleGenerateClick = () => {
@@ -142,21 +134,14 @@ export const RawInputSection: React.FC<RawInputSectionProps> = ({
             <textarea 
               className="w-full min-h-32 p-3 border rounded-lg resize-y" 
               style={{ backgroundColor: '#FFFFFF', borderColor: '#808384', fontSize: '14px' }}
-              placeholder={previewMode ? "Describe the feature, idea, or pain point in plain language.\nExamples:\n• Users can't find archived tasks\n• Add a button to duplicate a request\n• Make reports exportable to CSV\nDon't worry about the format--AI will handle that." : ""}
-              key={startOver ? 'reset' : 'normal'}
+              placeholder="Describe the feature, idea, or pain point in plain language.&#10;Examples:&#10;• Users can't find archived tasks&#10;• Add a button to duplicate a request&#10;• Make reports exportable to CSV&#10;Don't worry about the format--AI will handle that."
+              value={storyInput}
               rows={6}
               onChange={handleStoryInputChange}
             />
-            {previewMode && showHelperText.storyInput && (
-              <div className="text-xs text-gray-500 mt-1 break-words">
-                Describe the feature, idea, or pain point in plain language.<br/>
-                Examples:<br/>
-                • Users can't find archived tasks<br/>
-                • Add a button to duplicate a request<br/>
-                • Make reports exportable to CSV<br/>
-                Don't worry about the format--AI will handle that.
-              </div>
-            )}
+            <div className="text-xs text-gray-500 mt-1 break-words">
+              Describe the feature, idea, or pain point in plain language.
+            </div>
           </div>
           
           <div>
@@ -176,16 +161,14 @@ export const RawInputSection: React.FC<RawInputSectionProps> = ({
             <textarea 
               className="w-full min-h-40 p-3 border rounded-lg resize-y" 
               style={{ backgroundColor: '#FFFFFF', borderColor: '#808384', fontSize: '14px' }}
-              placeholder={previewMode ? "Write a custom prompt to guide the AI. This builds on any raw input or backend product context provided." : ""}
+              placeholder="Write a custom prompt to guide the AI. This builds on any raw input or backend product context provided."
+              value={customPrompt}
               rows={8}
-              key={startOver ? 'reset-prompt' : 'normal-prompt'}
               onChange={handleCustomPromptChange}
             />
-            {previewMode && showHelperText.customPrompt && (
-              <div className="text-xs text-gray-500 mt-1 break-words">
-                Write a custom prompt to guide the AI. This builds on any raw input or backend product context provided.
-              </div>
-            )}
+            <div className="text-xs text-gray-500 mt-1 break-words">
+              Optional. Use this if you want to steer the AI beyond the default behavior.
+            </div>
           </div>
           
           <div>

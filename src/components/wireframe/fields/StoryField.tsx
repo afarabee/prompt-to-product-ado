@@ -11,8 +11,7 @@ interface StoryFieldProps {
   inputType?: 'text' | 'textarea';
   rows?: number;
   helperText?: string;
-  previewMode?: boolean;
-  storyGenerated?: boolean;
+  onChange: (value: string) => void;
 }
 
 export const StoryField: React.FC<StoryFieldProps> = ({ 
@@ -23,8 +22,7 @@ export const StoryField: React.FC<StoryFieldProps> = ({
   inputType = 'text',
   rows = 4,
   helperText = '',
-  previewMode = false,
-  storyGenerated = false
+  onChange
 }) => {
   const openFieldChat = () => {
     console.log(`Opening chat for ${fieldName}`);
@@ -63,22 +61,28 @@ export const StoryField: React.FC<StoryFieldProps> = ({
           {inputType === 'textarea' ? (
             <textarea
               className="w-full border-none outline-none resize-y min-h-20"
-              placeholder={(!previewMode || (previewMode && !storyGenerated)) ? placeholder : ""}
+              placeholder={placeholder}
               rows={rows}
               style={{ backgroundColor: 'transparent', fontSize: '14px' }}
-              defaultValue={value}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              onFocus={(e) => e.target.placeholder = ''}
+              onBlur={(e) => e.target.placeholder = placeholder}
             />
           ) : (
             <input
               type="text"
               className="w-full border-none outline-none"
-              placeholder={(!previewMode || (previewMode && !storyGenerated)) ? placeholder : ""}
+              placeholder={placeholder}
               style={{ backgroundColor: 'transparent', fontSize: '14px' }}
-              defaultValue={value}
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              onFocus={(e) => e.target.placeholder = ''}
+              onBlur={(e) => e.target.placeholder = placeholder}
             />
           )}
         </div>
-        {(!previewMode || (previewMode && !storyGenerated)) && helperText && (
+        {helperText && (
           <div className="text-xs text-gray-500 mt-1 break-words">
             {helperText}
           </div>

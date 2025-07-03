@@ -5,9 +5,16 @@ import { GitBranch, Eye } from 'lucide-react';
 interface ADOIntegrationSectionProps {
   previewMode?: boolean;
   storyGenerated?: boolean;
+  storyPointEstimate: string;
+  onStoryPointEstimateChange: (value: string) => void;
 }
 
-export const ADOIntegrationSection: React.FC<ADOIntegrationSectionProps> = ({ previewMode = false, storyGenerated = false }) => {
+export const ADOIntegrationSection: React.FC<ADOIntegrationSectionProps> = ({ 
+  previewMode = false, 
+  storyGenerated = false,
+  storyPointEstimate,
+  onStoryPointEstimateChange
+}) => {
   return (
     <div className="p-6 rounded-lg border-2" style={{ backgroundColor: 'white', borderColor: '#808384' }}>
       <h2 className="text-lg font-semibold mb-4" style={{ color: '#002153' }}>Azure DevOps Integration</h2>
@@ -46,8 +53,9 @@ export const ADOIntegrationSection: React.FC<ADOIntegrationSectionProps> = ({ pr
               type="text"
               className="w-full p-2 border rounded" 
               style={{ borderColor: '#808384' }}
-              placeholder={(!previewMode || (previewMode && !storyGenerated)) ? "3, 5, XS, M..." : ""}
-              defaultValue={(previewMode && storyGenerated) ? "5" : ""}
+              placeholder="e.g., 3, 8, XS, M, L"
+              value={storyPointEstimate}
+              onChange={(e) => onStoryPointEstimateChange(e.target.value)}
             />
             <div className="text-xs text-gray-500 mt-1">
               Suggested by AI. You may edit or leave this blank.
