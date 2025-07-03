@@ -14,6 +14,7 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen: externalIsOpen, 
   const [activeFieldLabel, setActiveFieldLabel] = useState<string | null>(null);
   const [messages, setMessages] = useState<Array<{type: 'user' | 'ai', content: string, hasActions?: boolean, currentContent?: string, suggestedContent?: string}>>([]);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [confirmationMessage, setConfirmationMessage] = useState('');
   const [inputValue, setInputValue] = useState('');
 
   // Handle external control of drawer
@@ -86,8 +87,12 @@ This change adds specific security elements like MFA, role-based permissions, an
     
     // Simulate AI response with Current/Suggested format
     setTimeout(() => {
-      const currentContent = "Basic user management functionality...";
-      const suggestedContent = "As a product owner, I want comprehensive user management functionality, including role assignments, permission controls, and mobile responsive interface so that I can efficiently manage team access across all devices.";
+      // Get current field value from localStorage or similar
+      const event = new CustomEvent('getFieldValue', { detail: { fieldName: activeField } });
+      window.dispatchEvent(event);
+      
+      const currentContent = getCurrentFieldContent();
+      const suggestedContent = generateSuggestionForField(activeField, currentContent);
       
       setMessages(prev => [...prev, { 
         type: 'ai', 
@@ -99,22 +104,64 @@ This change adds specific security elements like MFA, role-based permissions, an
     }, 1000);
   };
 
-  const handleAcceptChanges = (action: 'replace' | 'append' | 'edit') => {
+  const getCurrentFieldContent = () => {
+    // This would get the actual current field content from AppLayout
+    // For now, return placeholder that will be replaced with real content
+    return "Current field content...";
+  };
+
+  const generateSuggestionForField = (fieldName: string | null, currentContent: string) => {
+    switch (fieldName) {
+      case 'description':
+        return "As a product owner, I want comprehensive user management functionality with robust security controls, including multi-factor authentication, role-based permissions, and audit logging so that I can ensure secure access management across the platform.";
+      case 'acceptanceCriteria':
+        return "• User can assign and modify roles for team members\n• System displays confirmation when permissions are updated\n• Interface includes multi-factor authentication setup\n• Admin can export user access reports in CSV format\n• All user management actions are logged for audit purposes";
+      case 'storyPointEstimate':
+        return "5";
+      case 'title':
+        return "Enhanced User Management System with Security Controls";
+      default:
+        return "Enhanced user story content with AI improvements...";
+    }
+  };
+
+  const handleAcceptChanges = (action: 'replace' | 'append' | 'edit', editedContent?: string) => {
     console.log(`${action} changes for`, activeField);
+    
+    // Get the actual AI suggestion content from the last message
+    const lastAIMessage = messages.slice().reverse().find(msg => msg.type === 'ai' && msg.hasActions);
+    const suggestionContent = editedContent || lastAIMessage?.suggestedContent || "Enhanced user story content...";
     
     // Dispatch event to update the field
     const event = new CustomEvent('updateFieldFromAI', { 
       detail: { 
         fieldName: activeField, 
         action, 
-        suggestedContent: "Enhanced user story content..." // This would be the actual AI suggestion
+        suggestedContent: suggestionContent
       } 
     });
     window.dispatchEvent(event);
     
-    // Show confirmation message
+    // Set appropriate confirmation message
+    let message = '';
+    switch (action) {
+      case 'replace':
+        message = 'Your field has been updated with the AI suggestion.';
+        break;
+      case 'append':
+        message = 'The AI suggestion has been appended to this field.';
+        break;
+      case 'edit':
+        message = 'Your field has been updated with your edited AI suggestion.';
+        break;
+    }
+    
+    setConfirmationMessage(message);
     setShowConfirmation(true);
-    setTimeout(() => setShowConfirmation(false), 3000);
+    setTimeout(() => {
+      setShowConfirmation(false);
+      setConfirmationMessage('');
+    }, 3000);
   };
 
   const handleRejectChanges = () => {
@@ -153,7 +200,7 @@ This change adds specific security elements like MFA, role-based permissions, an
 
         {showConfirmation && (
           <div className="p-3 bg-green-50 border-b text-sm text-green-800">
-            ✅ Your field has been updated with AI suggestions.
+            ✅ {confirmationMessage}
           </div>
         )}
 

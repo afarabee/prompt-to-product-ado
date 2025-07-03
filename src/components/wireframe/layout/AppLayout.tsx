@@ -56,20 +56,50 @@ export const AppLayout = () => {
             newValue = currentValue ? `${currentValue}\n\n${suggestedContent}` : suggestedContent;
             break;
           case 'edit':
-            // For now, just append - could open inline editor in future
-            newValue = currentValue ? `${currentValue}\n\n${suggestedContent}` : suggestedContent;
+            newValue = suggestedContent; // Already edited content passed from ChatMessage
             break;
           default:
             return prev;
+        }
+        
+        // Trigger dependency notification for Description and Acceptance Criteria
+        if ((fieldName === 'description' || fieldName === 'acceptanceCriteria') && 
+            currentValue !== newValue) {
+          
+          const sourceField = fieldName === 'description' ? 'Description' : 'Acceptance Criteria';
+          const targetField = fieldName === 'description' ? 'Acceptance Criteria' : 'Description';
+          const targetFieldValue = fieldName === 'description' ? prev.acceptanceCriteria : prev.description;
+          
+          // Only show notification if target field has content
+          if (targetFieldValue) {
+            setTimeout(() => {
+              setDependencies({
+                sourceField,
+                targetField,
+                show: true
+              });
+            }, 500);
+          }
         }
         
         return { ...prev, [fieldName]: newValue };
       });
     };
 
+    const handleGetFieldValue = (event: CustomEvent) => {
+      const { fieldName } = event.detail;
+      // This could be used to send current field values back to ChatDrawer
+      console.log('Field value requested for:', fieldName, fieldValues[fieldName as keyof typeof fieldValues]);
+    };
+
     window.addEventListener('updateFieldFromAI', handleUpdateFieldFromAI as EventListener);
-    return () => window.removeEventListener('updateFieldFromAI', handleUpdateFieldFromAI as EventListener);
-  }, []);
+    window.addEventListener('getFieldValue', handleGetFieldValue as EventListener);
+    
+    return () => {
+      window.removeEventListener('updateFieldFromAI', handleUpdateFieldFromAI as EventListener);
+      window.removeEventListener('getFieldValue', handleGetFieldValue as EventListener);
+    };
+  }, [fieldValues]);
 
   const handleDependencyClick = () => {
     if (dependencies) {
