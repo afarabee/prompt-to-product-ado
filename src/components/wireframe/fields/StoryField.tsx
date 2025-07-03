@@ -12,6 +12,7 @@ interface StoryFieldProps {
   rows?: number;
   helperText?: string;
   previewMode?: boolean;
+  storyGenerated?: boolean;
 }
 
 export const StoryField: React.FC<StoryFieldProps> = ({ 
@@ -22,7 +23,8 @@ export const StoryField: React.FC<StoryFieldProps> = ({
   inputType = 'text',
   rows = 4,
   helperText = '',
-  previewMode = false
+  previewMode = false,
+  storyGenerated = false
 }) => {
   const openFieldChat = () => {
     console.log(`Opening chat for ${fieldName}`);
@@ -61,22 +63,22 @@ export const StoryField: React.FC<StoryFieldProps> = ({
           {inputType === 'textarea' ? (
             <textarea
               className="w-full border-none outline-none resize-y min-h-20"
-              placeholder={previewMode ? placeholder : ""}
+              placeholder={previewMode && !storyGenerated ? placeholder : ""}
               rows={rows}
               style={{ backgroundColor: 'transparent', fontSize: '14px' }}
-              defaultValue={previewMode ? "" : value}
+              defaultValue={value}
             />
           ) : (
             <input
               type="text"
               className="w-full border-none outline-none"
-              placeholder={previewMode ? placeholder : ""}
+              placeholder={previewMode && !storyGenerated ? placeholder : ""}
               style={{ backgroundColor: 'transparent', fontSize: '14px' }}
-              defaultValue={previewMode ? "" : value}
+              defaultValue={value}
             />
           )}
         </div>
-        {previewMode && helperText && (
+        {previewMode && !storyGenerated && helperText && (
           <div className="text-xs text-gray-500 mt-1 break-words">
             {helperText}
           </div>

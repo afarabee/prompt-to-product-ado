@@ -8,14 +8,19 @@ interface RawInputSectionProps {
   isCollapsed?: boolean;
   onToggleCollapse?: (collapsed: boolean) => void;
   previewMode?: boolean;
+  onGenerateStory?: () => void;
+  onStartOver?: () => void;
 }
 
 export const RawInputSection: React.FC<RawInputSectionProps> = ({ 
   isCollapsed = false, 
   onToggleCollapse,
-  previewMode = false
+  previewMode = false,
+  onGenerateStory,
+  onStartOver
 }) => {
   const [startOver, setStartOver] = useState(false);
+  const [showHelperText, setShowHelperText] = useState({ storyInput: true, customPrompt: true });
 
   const handleStartOver = () => {
     // Clear all input fields and local storage
@@ -29,8 +34,34 @@ export const RawInputSection: React.FC<RawInputSectionProps> = ({
     // Clear any stored data from local storage
     localStorage.removeItem('storyBuilderData');
     
+    // Reset helper text visibility
+    setShowHelperText({ storyInput: true, customPrompt: true });
+    
     setStartOver(true);
     setTimeout(() => setStartOver(false), 100);
+    
+    // Call parent handler to reset story generation state
+    onStartOver?.();
+  };
+
+  const handleStoryInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (previewMode && e.target.value.trim() !== '') {
+      setShowHelperText(prev => ({ ...prev, storyInput: false }));
+    }
+  };
+
+  const handleCustomPromptChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    if (previewMode && e.target.value.trim() !== '') {
+      setShowHelperText(prev => ({ ...prev, customPrompt: false }));
+    }
+  };
+
+  const handleGenerateClick = () => {
+    if (!previewMode) {
+      // In empty state testing mode, button is non-functional
+      return;
+    }
+    onGenerateStory?.();
   };
 
   const handleToggleCollapse = () => {
@@ -117,8 +148,9 @@ export const RawInputSection: React.FC<RawInputSectionProps> = ({
               placeholder={previewMode ? "Describe the feature, idea, or pain point in plain language.\nExamples:\n• Users can't find archived tasks\n• Add a button to duplicate a request\n• Make reports exportable to CSV\nDon't worry about the format--AI will handle that." : ""}
               key={startOver ? 'reset' : 'normal'}
               rows={6}
+              onChange={handleStoryInputChange}
             />
-            {previewMode && (
+            {previewMode && showHelperText.storyInput && (
               <div className="text-xs text-gray-500 mt-1 break-words">
                 Describe the feature, idea, or pain point in plain language.<br/>
                 Examples:<br/>
@@ -150,8 +182,9 @@ export const RawInputSection: React.FC<RawInputSectionProps> = ({
               placeholder={previewMode ? "Write a custom prompt to guide the AI. This builds on any raw input or backend product context provided." : ""}
               rows={8}
               key={startOver ? 'reset-prompt' : 'normal-prompt'}
+              onChange={handleCustomPromptChange}
             />
-            {previewMode && (
+            {previewMode && showHelperText.customPrompt && (
               <div className="text-xs text-gray-500 mt-1 break-words">
                 Write a custom prompt to guide the AI. This builds on any raw input or backend product context provided.
               </div>
@@ -174,7 +207,14 @@ export const RawInputSection: React.FC<RawInputSectionProps> = ({
             </div>
           </div>
           
-          <button className="w-full p-3 rounded-lg font-medium text-white flex items-center justify-center gap-2" style={{ backgroundColor: '#005AA7' }}>
+          <button 
+            onClick={handleGenerateClick}
+            disabled={!previewMode}
+            className={`w-full p-3 rounded-lg font-medium text-white flex items-center justify-center gap-2 ${
+              !previewMode ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'
+            }`} 
+            style={{ backgroundColor: '#005AA7' }}
+          >
             <RefreshCw className="w-4 h-4" />
             Generate User Story
           </button>

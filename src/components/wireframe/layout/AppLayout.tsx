@@ -14,6 +14,17 @@ export const AppLayout = () => {
   const [showUserManagement, setShowUserManagement] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
+  const [storyGenerated, setStoryGenerated] = useState(false);
+
+  const handleGenerateStory = () => {
+    if (previewMode) {
+      setStoryGenerated(true);
+    }
+  };
+
+  const handleStartOver = () => {
+    setStoryGenerated(false);
+  };
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: 'Arial, sans-serif' }}>
@@ -31,7 +42,7 @@ export const AppLayout = () => {
           {previewMode ? 'Preview Mode: ON' : 'Preview Mode: OFF'}
         </button>
         <span className="text-sm text-gray-600">
-          {previewMode ? 'Normal mode with sample data' : 'Testing layout without sample data'}
+          {previewMode ? 'Simulated User Interaction Mode' : 'Empty State Testing Mode'}
         </span>
       </div>
       
@@ -49,8 +60,13 @@ export const AppLayout = () => {
                 isCollapsed={isInputCollapsed}
                 onToggleCollapse={setIsInputCollapsed}
                 previewMode={previewMode}
+                onGenerateStory={handleGenerateStory}
+                onStartOver={handleStartOver}
               />
-              <GeneratedStorySection previewMode={previewMode} />
+              <GeneratedStorySection 
+                previewMode={previewMode} 
+                storyGenerated={storyGenerated}
+              />
             </div>
           </div>
         </main>
