@@ -86,6 +86,35 @@ export const AppLayout = () => {
       });
     };
 
+    const handleReplaceStoryFromAI = (event: CustomEvent) => {
+      const { content } = event.detail;
+      
+      // Parse the AI story content and extract fields
+      const parseStoryContent = (content: string) => {
+        const titleMatch = content.match(/\*\*Title:\*\*\s*(.+?)(?=\n|\*\*|$)/);
+        const descriptionMatch = content.match(/\*\*Description:\*\*\s*([\s\S]*?)(?=\n\*\*|$)/);
+        const criteriaMatch = content.match(/\*\*Acceptance Criteria:\*\*\s*([\s\S]*?)(?=\n\*\*|$)/);
+        const estimateMatch = content.match(/\*\*Story Point Estimate:\*\*\s*(.+?)(?=\n|\*\*|$)/);
+        
+        return {
+          title: titleMatch?.[1]?.trim() || '',
+          description: descriptionMatch?.[1]?.trim() || '',
+          acceptanceCriteria: criteriaMatch?.[1]?.trim() || '',
+          storyPointEstimate: estimateMatch?.[1]?.trim() || ''
+        };
+      };
+      
+      const parsedStory = parseStoryContent(content);
+      
+      setFieldValues(prev => ({
+        ...prev,
+        title: parsedStory.title,
+        description: parsedStory.description,
+        acceptanceCriteria: parsedStory.acceptanceCriteria,
+        storyPointEstimate: parsedStory.storyPointEstimate
+      }));
+    };
+
     const handleGetFieldValue = (event: CustomEvent) => {
       const { fieldName } = event.detail;
       // This could be used to send current field values back to ChatDrawer
@@ -93,10 +122,12 @@ export const AppLayout = () => {
     };
 
     window.addEventListener('updateFieldFromAI', handleUpdateFieldFromAI as EventListener);
+    window.addEventListener('replaceStoryFromAI', handleReplaceStoryFromAI as EventListener);
     window.addEventListener('getFieldValue', handleGetFieldValue as EventListener);
     
     return () => {
       window.removeEventListener('updateFieldFromAI', handleUpdateFieldFromAI as EventListener);
+      window.removeEventListener('replaceStoryFromAI', handleReplaceStoryFromAI as EventListener);
       window.removeEventListener('getFieldValue', handleGetFieldValue as EventListener);
     };
   }, [fieldValues]);

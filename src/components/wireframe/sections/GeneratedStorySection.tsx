@@ -2,7 +2,8 @@
 import React from 'react';
 import { StoryField } from '../fields/StoryField';
 import { ADOIntegrationSection } from './ADOIntegrationSection';
-import { Copy } from 'lucide-react';
+import { Copy, MessageSquare } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface GeneratedStorySectionProps {
   previewMode?: boolean;
@@ -29,20 +30,49 @@ export const GeneratedStorySection: React.FC<GeneratedStorySectionProps> = ({
   onAcceptanceCriteriaChange,
   onStoryPointEstimateChange
 }) => {
+  const handleStoryReviewClick = () => {
+    const event = new CustomEvent('openStoryReviewChat', { 
+      detail: { 
+        title,
+        description,
+        acceptanceCriteria,
+        storyPointEstimate
+      } 
+    });
+    window.dispatchEvent(event);
+  };
   return (
-    <div className="space-y-6">
-      <div className="p-6 rounded-lg border-2 relative" style={{ backgroundColor: 'white', borderColor: '#00A0E3' }}>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold" style={{ color: '#002153' }}>Generated User Story</h2>
-          <button 
-            className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100" 
-            style={{ color: '#005AA7' }}
-            title="Copy to clipboard"
-          >
-            <Copy className="w-4 h-4" />
-            <span className="text-sm font-medium">Copy</span>
-          </button>
-        </div>
+    <TooltipProvider>
+      <div className="space-y-6">
+        <div className="p-6 rounded-lg border-2 relative" style={{ backgroundColor: 'white', borderColor: '#00A0E3' }}>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold" style={{ color: '#002153' }}>Generated User Story</h2>
+            <div className="flex items-center gap-2">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button 
+                    onClick={handleStoryReviewClick}
+                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100" 
+                    style={{ color: '#005AA7' }}
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span className="text-sm font-medium">Review Story with AI</span>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Open AI chat to revise or discuss the entire generated user story.</p>
+                </TooltipContent>
+              </Tooltip>
+              <button 
+                className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100" 
+                style={{ color: '#005AA7' }}
+                title="Copy to clipboard"
+              >
+                <Copy className="w-4 h-4" />
+                <span className="text-sm font-medium">Copy</span>
+              </button>
+            </div>
+          </div>
         
         <div className="space-y-4">
           <StoryField
@@ -84,14 +114,15 @@ export const GeneratedStorySection: React.FC<GeneratedStorySectionProps> = ({
           </div>
         </div>
 
+        </div>
+        
+        <ADOIntegrationSection 
+          previewMode={previewMode} 
+          storyGenerated={storyGenerated}
+          storyPointEstimate={storyPointEstimate}
+          onStoryPointEstimateChange={onStoryPointEstimateChange}
+        />
       </div>
-      
-      <ADOIntegrationSection 
-        previewMode={previewMode} 
-        storyGenerated={storyGenerated}
-        storyPointEstimate={storyPointEstimate}
-        onStoryPointEstimateChange={onStoryPointEstimateChange}
-      />
-    </div>
+    </TooltipProvider>
   );
 };

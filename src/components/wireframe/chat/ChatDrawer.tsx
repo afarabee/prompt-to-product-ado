@@ -12,7 +12,9 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen: externalIsOpen, 
   const [isOpen, setIsOpen] = useState(false);
   const [activeField, setActiveField] = useState<string | null>(null);
   const [activeFieldLabel, setActiveFieldLabel] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Array<{type: 'user' | 'ai', content: string, hasActions?: boolean, currentContent?: string, suggestedContent?: string}>>([]);
+  const [isStoryReviewMode, setIsStoryReviewMode] = useState(false);
+  const [storyContext, setStoryContext] = useState<{title: string, description: string, acceptanceCriteria: string, storyPointEstimate: string} | null>(null);
+  const [messages, setMessages] = useState<Array<{type: 'user' | 'ai', content: string, hasActions?: boolean, currentContent?: string, suggestedContent?: string, isStoryReplace?: boolean}>>([]);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const [inputValue, setInputValue] = useState('');
@@ -38,6 +40,8 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen: externalIsOpen, 
       const { fieldName, label } = event.detail;
       setActiveField(fieldName);
       setActiveFieldLabel(label);
+      setIsStoryReviewMode(false);
+      setStoryContext(null);
       setIsOpen(true);
       
       // Add sample conversation data
@@ -67,8 +71,71 @@ This change adds specific security elements like MFA, role-based permissions, an
       setInputValue('');
     };
 
+    const handleOpenStoryReviewChat = (event: CustomEvent) => {
+      const { title, description, acceptanceCriteria, storyPointEstimate } = event.detail;
+      setActiveField(null);
+      setActiveFieldLabel(null);
+      setIsStoryReviewMode(true);
+      setStoryContext({ title, description, acceptanceCriteria, storyPointEstimate });
+      setIsOpen(true);
+      
+      // Create story review starter message
+      const storyContent = `**Title:** ${title || '(Empty)'}
+
+**Description:** ${description || '(Empty)'}
+
+**Acceptance Criteria:** ${acceptanceCriteria || '(Empty)'}
+
+**Story Point Estimate:** ${storyPointEstimate || '(Empty)'}`;
+      
+      const storyMessages = [
+        {
+          type: 'ai' as const,
+          content: `Here's your current story draft. What would you like to refine or update?
+
+${storyContent}`
+        },
+        {
+          type: 'user' as const,
+          content: 'Can you improve this story to focus more on user security and make it more detailed?'
+        },
+        {
+          type: 'ai' as const,
+          content: `I'll help you enhance this story with better security focus and more detail. Here's my suggested revision:
+
+**Enhanced User Story:**
+
+**Title:** Secure User Management System with Multi-Factor Authentication
+
+**Description:** As a product owner, I want a comprehensive user management system with robust security controls, including multi-factor authentication, role-based permissions, session management, and detailed audit logging so that I can ensure secure access management across the platform while maintaining compliance with security standards.
+
+**Acceptance Criteria:** 
+• User can assign and modify roles for team members with approval workflow
+• System enforces multi-factor authentication for all admin actions
+• Interface displays real-time security status and user session information
+• Admin can export detailed user access reports with audit trail in CSV/PDF format
+• All user management actions are logged with timestamps and IP addresses
+• Password policies are enforced with complexity requirements
+• Inactive sessions are automatically terminated after configurable timeout
+
+**Story Point Estimate:** 8
+
+This revision adds specific security features, clearer user outcomes, and more detailed acceptance criteria.`,
+          hasActions: true,
+          isStoryReplace: true
+        }
+      ];
+      
+      setMessages(storyMessages);
+      setInputValue('');
+    };
+
     window.addEventListener('openFieldChat', handleOpenFieldChat as EventListener);
-    return () => window.removeEventListener('openFieldChat', handleOpenFieldChat as EventListener);
+    window.addEventListener('openStoryReviewChat', handleOpenStoryReviewChat as EventListener);
+    return () => {
+      window.removeEventListener('openFieldChat', handleOpenFieldChat as EventListener);
+      window.removeEventListener('openStoryReviewChat', handleOpenStoryReviewChat as EventListener);
+    };
   }, []);
 
   const toggleChat = () => {
@@ -85,22 +152,28 @@ This change adds specific security elements like MFA, role-based permissions, an
     setMessages(prev => [...prev, { type: 'user', content: inputValue }]);
     setInputValue('');
     
-    // Simulate AI response with Current/Suggested format
+    // Simulate AI response
     setTimeout(() => {
-      // Get current field value from localStorage or similar
-      const event = new CustomEvent('getFieldValue', { detail: { fieldName: activeField } });
-      window.dispatchEvent(event);
-      
-      const currentContent = getCurrentFieldContent();
-      const suggestedContent = generateSuggestionForField(activeField, currentContent);
-      
-      setMessages(prev => [...prev, { 
-        type: 'ai', 
-        content: `I suggest updating the ${activeFieldLabel?.toLowerCase()} to focus on specific user management features.`,
-        hasActions: true,
-        currentContent,
-        suggestedContent
-      }]);
+      if (isStoryReviewMode) {
+        // Generate story review response
+        const storyReviewResponse = generateStoryReviewResponse(inputValue);
+        setMessages(prev => [...prev, storyReviewResponse]);
+      } else {
+        // Field-specific response
+        const event = new CustomEvent('getFieldValue', { detail: { fieldName: activeField } });
+        window.dispatchEvent(event);
+        
+        const currentContent = getCurrentFieldContent();
+        const suggestedContent = generateSuggestionForField(activeField, currentContent);
+        
+        setMessages(prev => [...prev, { 
+          type: 'ai', 
+          content: `I suggest updating the ${activeFieldLabel?.toLowerCase()} to focus on specific user management features.`,
+          hasActions: true,
+          currentContent,
+          suggestedContent
+        }]);
+      }
     }, 1000);
   };
 
@@ -125,10 +198,63 @@ This change adds specific security elements like MFA, role-based permissions, an
     }
   };
 
-  const handleAcceptChanges = (action: 'replace' | 'append' | 'edit', editedContent?: string) => {
-    console.log(`${action} changes for`, activeField);
+  const generateStoryReviewResponse = (userInput: string) => {
+    // Generate contextual response based on user input
+    const responses = [
+      {
+        type: 'ai' as const,
+        content: `I'll help you improve the entire user story based on your feedback. Here's a revised version that addresses your concerns:
+
+**Enhanced User Story:**
+
+**Title:** Advanced User Management Platform with Security Controls
+
+**Description:** As a product owner, I want a comprehensive user management platform with advanced security features, including multi-factor authentication, granular role-based permissions, real-time monitoring, and automated compliance reporting so that I can ensure secure and efficient access management while meeting regulatory requirements.
+
+**Acceptance Criteria:** 
+• System enforces multi-factor authentication for all administrative functions
+• Users can be assigned granular roles with customizable permission sets
+• Real-time dashboard shows active sessions and security events
+• Automated compliance reports are generated monthly with audit trails
+• Password policies include complexity requirements and regular rotation
+• Session timeout and concurrent login limits are configurable
+• All user actions are logged with detailed metadata for forensic analysis
+
+**Story Point Estimate:** 13
+
+This revision enhances security features, adds compliance aspects, and provides more detailed acceptance criteria.`,
+        hasActions: true,
+        isStoryReplace: true
+      }
+    ];
     
-    // Get the actual AI suggestion content from the last message
+    return responses[0];
+  };
+
+  const handleAcceptChanges = (action: 'replace' | 'append' | 'edit' | 'replaceStory', editedContent?: string) => {
+    console.log(`${action} changes for`, isStoryReviewMode ? 'story review' : activeField);
+    
+    if (action === 'replaceStory') {
+      // Handle full story replacement
+      const lastAIMessage = messages.slice().reverse().find(msg => msg.type === 'ai' && msg.hasActions && msg.isStoryReplace);
+      if (lastAIMessage) {
+        const content = editedContent || lastAIMessage.content;
+        const event = new CustomEvent('replaceStoryFromAI', { 
+          detail: { content } 
+        });
+        window.dispatchEvent(event);
+        
+        setConfirmationMessage('Your story draft has been replaced with the AI suggestion.');
+        setShowConfirmation(true);
+        setTimeout(() => {
+          setShowConfirmation(false);
+          setConfirmationMessage('');
+        }, 3000);
+      }
+      return;
+    }
+    
+    // Handle field-specific changes
     const lastAIMessage = messages.slice().reverse().find(msg => msg.type === 'ai' && msg.hasActions);
     const suggestionContent = editedContent || lastAIMessage?.suggestedContent || "Enhanced user story content...";
     
@@ -181,7 +307,7 @@ This change adds specific security elements like MFA, role-based permissions, an
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b" style={{ backgroundColor: '#005AA7' }}>
           <h3 className="text-white font-semibold">
-            {activeFieldLabel ? `Chat: ${activeFieldLabel} Field` : 'AI Chat'}
+            {isStoryReviewMode ? 'Story Review Chat' : activeFieldLabel ? `Chat: ${activeFieldLabel} Field` : 'AI Chat'}
           </h3>
           <button
             onClick={toggleChat}
@@ -195,6 +321,12 @@ This change adds specific security elements like MFA, role-based permissions, an
         {activeFieldLabel && (
           <div className="p-3 bg-blue-50 border-b text-sm text-blue-800">
             Refine this field with AI assistance
+          </div>
+        )}
+        
+        {isStoryReviewMode && (
+          <div className="p-3 bg-purple-50 border-b text-sm text-purple-800">
+            Review and refine your entire user story
           </div>
         )}
 
