@@ -60,18 +60,18 @@ export const StoryField: React.FC<StoryFieldProps> = ({
         <div className="p-3 rounded border-2" style={{ backgroundColor: '#FFFFFF', borderColor: '#808384' }}>
           {inputType === 'textarea' ? (
             <textarea
-              className="w-full border-none outline-none resize-y text-sm min-h-20"
-              placeholder={previewMode ? "" : placeholder}
+              className="w-full border-none outline-none resize-y min-h-20"
+              placeholder={previewMode ? placeholder : ""}
               rows={rows}
-              style={{ backgroundColor: 'transparent' }}
+              style={{ backgroundColor: 'transparent', fontSize: '14px' }}
               defaultValue={previewMode ? "" : value}
             />
           ) : (
             <input
               type="text"
-              className="w-full border-none outline-none text-sm"
-              placeholder={previewMode ? "" : placeholder}
-              style={{ backgroundColor: 'transparent' }}
+              className="w-full border-none outline-none"
+              placeholder={previewMode ? placeholder : ""}
+              style={{ backgroundColor: 'transparent', fontSize: '14px' }}
               defaultValue={previewMode ? "" : value}
             />
           )}

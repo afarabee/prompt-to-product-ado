@@ -19,6 +19,15 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen: externalIsOpen, 
   useEffect(() => {
     if (externalIsOpen !== undefined) {
       setIsOpen(externalIsOpen);
+      if (externalIsOpen && !activeField) {
+        // When opened from navigation, show welcome message
+        setActiveField(null);
+        setActiveFieldLabel(null);
+        setMessages([{
+          type: 'ai',
+          content: "Hi! I can help you write or revise any part of your user story. What would you like help with?"
+        }]);
+      }
     }
   }, [externalIsOpen]);
 

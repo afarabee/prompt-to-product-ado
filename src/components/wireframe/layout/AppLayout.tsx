@@ -31,7 +31,7 @@ export const AppLayout = () => {
           {previewMode ? 'Preview Mode: ON' : 'Preview Mode: OFF'}
         </button>
         <span className="text-sm text-gray-600">
-          {previewMode ? 'Testing layout without sample data' : 'Normal mode with sample data'}
+          {previewMode ? 'Normal mode with sample data' : 'Testing layout without sample data'}
         </span>
       </div>
       

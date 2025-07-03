@@ -113,8 +113,8 @@ export const RawInputSection: React.FC<RawInputSectionProps> = ({
             </div>
             <textarea 
               className="w-full min-h-32 p-3 border rounded-lg resize-y" 
-              style={{ backgroundColor: '#FFFFFF', borderColor: '#808384' }}
-              placeholder={previewMode ? "" : "Describe the feature, idea, or pain point in plain language.\nExamples:\n• Users can't find archived tasks\n• Add a button to duplicate a request\n• Make reports exportable to CSV\nDon't worry about the format--AI will handle that."}
+              style={{ backgroundColor: '#FFFFFF', borderColor: '#808384', fontSize: '14px' }}
+              placeholder={previewMode ? "Describe the feature, idea, or pain point in plain language.\nExamples:\n• Users can't find archived tasks\n• Add a button to duplicate a request\n• Make reports exportable to CSV\nDon't worry about the format--AI will handle that." : ""}
               key={startOver ? 'reset' : 'normal'}
               rows={6}
             />
@@ -146,8 +146,8 @@ export const RawInputSection: React.FC<RawInputSectionProps> = ({
             </div>
             <textarea 
               className="w-full min-h-40 p-3 border rounded-lg resize-y" 
-              style={{ backgroundColor: '#FFFFFF', borderColor: '#808384' }}
-              placeholder={previewMode ? "" : "Write a custom prompt to guide the AI. This builds on any raw input or backend product context provided."}
+              style={{ backgroundColor: '#FFFFFF', borderColor: '#808384', fontSize: '14px' }}
+              placeholder={previewMode ? "Write a custom prompt to guide the AI. This builds on any raw input or backend product context provided." : ""}
               rows={8}
               key={startOver ? 'reset-prompt' : 'normal-prompt'}
             />
