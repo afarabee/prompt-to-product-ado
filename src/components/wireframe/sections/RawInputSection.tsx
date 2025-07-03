@@ -134,14 +134,11 @@ export const RawInputSection: React.FC<RawInputSectionProps> = ({
             <textarea 
               className="w-full min-h-32 p-3 border rounded-lg resize-y" 
               style={{ backgroundColor: '#FFFFFF', borderColor: '#808384', fontSize: '14px' }}
-              placeholder="Describe the feature, idea, or pain point in plain language.&#10;Examples:&#10;• Users can't find archived tasks&#10;• Add a button to duplicate a request&#10;• Make reports exportable to CSV&#10;Don't worry about the format--AI will handle that."
+              placeholder="Describe the feature, idea, or problem in plain language. Don't worry about the format--AI will handle that."
               value={storyInput}
               rows={6}
               onChange={handleStoryInputChange}
             />
-            <div className="text-xs text-gray-500 mt-1 break-words">
-              Describe the feature, idea, or pain point in plain language.
-            </div>
           </div>
           
           <div>

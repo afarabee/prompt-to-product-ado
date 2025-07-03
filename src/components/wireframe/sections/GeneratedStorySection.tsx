@@ -70,10 +70,10 @@ export const GeneratedStorySection: React.FC<GeneratedStorySectionProps> = ({
             label="Acceptance Criteria"
             fieldName="acceptanceCriteria"
             value={acceptanceCriteria}
-            placeholder="• List clear, testable conditions that must be true before this story is 'done'&#10;• User can do X with Y&#10;• The system shows an error when...&#10;• Feature must support A, B, and C"
+            placeholder="List clear, testable success criteria (e.g., User can do X, system shows error when, feature must support A, B, and C)"
             inputType="textarea"
             rows={8}
-            helperText="Clear, testable conditions that define when the story is complete"
+            helperText="Conditions that must be true for this story to be complete."
             onChange={onAcceptanceCriteriaChange}
           />
           
