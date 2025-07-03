@@ -46,8 +46,8 @@ export const ADOIntegrationSection: React.FC<ADOIntegrationSectionProps> = ({ pr
               type="text"
               className="w-full p-2 border rounded" 
               style={{ borderColor: '#808384' }}
-              placeholder={previewMode && !storyGenerated ? "3, 5, XS, M..." : ""}
-              defaultValue={(!previewMode || storyGenerated) ? "5" : ""}
+              placeholder={(!previewMode || (previewMode && !storyGenerated)) ? "3, 5, XS, M..." : ""}
+              defaultValue={(previewMode && storyGenerated) ? "5" : ""}
             />
             <div className="text-xs text-gray-500 mt-1">
               Suggested by AI. You may edit or leave this blank.

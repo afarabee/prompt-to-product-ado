@@ -63,7 +63,7 @@ export const StoryField: React.FC<StoryFieldProps> = ({
           {inputType === 'textarea' ? (
             <textarea
               className="w-full border-none outline-none resize-y min-h-20"
-              placeholder={previewMode && !storyGenerated ? placeholder : ""}
+              placeholder={(!previewMode || (previewMode && !storyGenerated)) ? placeholder : ""}
               rows={rows}
               style={{ backgroundColor: 'transparent', fontSize: '14px' }}
               defaultValue={value}
@@ -72,13 +72,13 @@ export const StoryField: React.FC<StoryFieldProps> = ({
             <input
               type="text"
               className="w-full border-none outline-none"
-              placeholder={previewMode && !storyGenerated ? placeholder : ""}
+              placeholder={(!previewMode || (previewMode && !storyGenerated)) ? placeholder : ""}
               style={{ backgroundColor: 'transparent', fontSize: '14px' }}
               defaultValue={value}
             />
           )}
         </div>
-        {previewMode && !storyGenerated && helperText && (
+        {(!previewMode || (previewMode && !storyGenerated)) && helperText && (
           <div className="text-xs text-gray-500 mt-1 break-words">
             {helperText}
           </div>

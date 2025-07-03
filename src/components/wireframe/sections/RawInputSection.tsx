@@ -57,10 +57,7 @@ export const RawInputSection: React.FC<RawInputSectionProps> = ({
   };
 
   const handleGenerateClick = () => {
-    if (!previewMode) {
-      // In empty state testing mode, button is non-functional
-      return;
-    }
+    // Button is functional in both modes now
     onGenerateStory?.();
   };
 
@@ -209,10 +206,7 @@ export const RawInputSection: React.FC<RawInputSectionProps> = ({
           
           <button 
             onClick={handleGenerateClick}
-            disabled={!previewMode}
-            className={`w-full p-3 rounded-lg font-medium text-white flex items-center justify-center gap-2 ${
-              !previewMode ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'
-            }`} 
+            className="w-full p-3 rounded-lg font-medium text-white flex items-center justify-center gap-2 hover:opacity-90" 
             style={{ backgroundColor: '#005AA7' }}
           >
             <RefreshCw className="w-4 h-4" />
