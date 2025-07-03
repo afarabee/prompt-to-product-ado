@@ -18,6 +18,11 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen: externalIsOpen, 
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const [inputValue, setInputValue] = useState('');
+  const [isDedicatedEditing, setIsDedicatedEditing] = useState(false);
+  const [dedicatedEditContent, setDedicatedEditContent] = useState('');
+  const [isStoryReplaceEdit, setIsStoryReplaceEdit] = useState(false);
+  const [showReplaceWarning, setShowReplaceWarning] = useState(false);
+  const [replaceWarningContent, setReplaceWarningContent] = useState('');
 
   // Handle external control of drawer
   useEffect(() => {
@@ -130,11 +135,28 @@ This revision adds specific security features, clearer user outcomes, and more d
       setInputValue('');
     };
 
+    const handleOpenDedicatedEditor = (event: CustomEvent) => {
+      const { content, isStoryReplace } = event.detail;
+      setDedicatedEditContent(content);
+      setIsStoryReplaceEdit(isStoryReplace);
+      setIsDedicatedEditing(true);
+    };
+
+    const handleShowReplaceWarning = (event: CustomEvent) => {
+      const { content } = event.detail;
+      setReplaceWarningContent(content);
+      setShowReplaceWarning(true);
+    };
+
     window.addEventListener('openFieldChat', handleOpenFieldChat as EventListener);
     window.addEventListener('openStoryReviewChat', handleOpenStoryReviewChat as EventListener);
+    window.addEventListener('openDedicatedEditor', handleOpenDedicatedEditor as EventListener);
+    window.addEventListener('showReplaceWarning', handleShowReplaceWarning as EventListener);
     return () => {
       window.removeEventListener('openFieldChat', handleOpenFieldChat as EventListener);
       window.removeEventListener('openStoryReviewChat', handleOpenStoryReviewChat as EventListener);
+      window.removeEventListener('openDedicatedEditor', handleOpenDedicatedEditor as EventListener);
+      window.removeEventListener('showReplaceWarning', handleShowReplaceWarning as EventListener);
     };
   }, []);
 
@@ -295,6 +317,62 @@ This revision enhances security features, adds compliance aspects, and provides 
     // Simply dismiss the suggestion without changes
   };
 
+  const handleApplyDedicatedEdit = () => {
+    if (isStoryReplaceEdit) {
+      const event = new CustomEvent('replaceStoryFromAI', { 
+        detail: { content: dedicatedEditContent } 
+      });
+      window.dispatchEvent(event);
+      
+      setConfirmationMessage('Your story draft has been replaced with the edited content.');
+    } else {
+      const event = new CustomEvent('updateFieldFromAI', { 
+        detail: { 
+          fieldName: activeField, 
+          action: 'edit', 
+          suggestedContent: dedicatedEditContent
+        } 
+      });
+      window.dispatchEvent(event);
+      
+      setConfirmationMessage('Your field has been updated with the edited content.');
+    }
+    
+    setIsDedicatedEditing(false);
+    setDedicatedEditContent('');
+    setShowConfirmation(true);
+    setTimeout(() => {
+      setShowConfirmation(false);
+      setConfirmationMessage('');
+    }, 3000);
+  };
+
+  const handleCancelDedicatedEdit = () => {
+    setIsDedicatedEditing(false);
+    setDedicatedEditContent('');
+  };
+
+  const handleConfirmReplace = () => {
+    const event = new CustomEvent('replaceStoryFromAI', { 
+      detail: { content: replaceWarningContent } 
+    });
+    window.dispatchEvent(event);
+    
+    setShowReplaceWarning(false);
+    setReplaceWarningContent('');
+    setConfirmationMessage('Your story draft has been replaced with the AI suggestion.');
+    setShowConfirmation(true);
+    setTimeout(() => {
+      setShowConfirmation(false);
+      setConfirmationMessage('');
+    }, 3000);
+  };
+
+  const handleCancelReplace = () => {
+    setShowReplaceWarning(false);
+    setReplaceWarningContent('');
+  };
+
   return (
     <>
       {/* Chat Drawer */}
@@ -349,31 +427,118 @@ This revision enhances security features, adds compliance aspects, and provides 
         </div>
 
         {/* Input Area at Bottom */}
-        <div className="p-4 border-t bg-white">
-          <div className="flex gap-2 mb-2">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              placeholder="Describe the changes you want..."
-              className="flex-1 p-2 border rounded"
-              onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-            />
-            <button
-              onClick={sendMessage}
-              className="p-2 rounded text-white"
-              style={{ backgroundColor: '#005AA7' }}
-            >
-              <Send className="w-4 h-4" />
-            </button>
-          </div>
-          {/* Tooltip below input - positioned to avoid cutoff */}
-          <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
-            <Lightbulb className="w-3 h-3" />
-            <span>Try: "Add more detail about..." or "Make it shorter" or "Focus on security aspects"</span>
-          </div>
+        <div className="border-t bg-white">
+          {isDedicatedEditing ? (
+            /* Dedicated Editor Mode */
+            <div className="p-4 bg-blue-50 border-t-2 border-blue-200">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold text-blue-800">
+                  {isStoryReplaceEdit ? 'Edit Full Story Before Replacing' : 'Edit Suggestion Before Applying'}
+                </h4>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleApplyDedicatedEdit}
+                    className="text-sm bg-green-100 text-green-800 px-4 py-2 rounded hover:bg-green-200 font-medium"
+                  >
+                    Apply Changes
+                  </button>
+                  <button
+                    onClick={handleCancelDedicatedEdit}
+                    className="text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded hover:bg-gray-200"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+              <textarea
+                value={dedicatedEditContent}
+                onChange={(e) => setDedicatedEditContent(e.target.value)}
+                className="w-full p-3 border rounded resize-y text-sm"
+                rows={12}
+                placeholder="Edit the content here..."
+              />
+            </div>
+          ) : (
+            /* Normal Chat Input */
+            <div className="p-4">
+              <div className="flex gap-2 mb-2">
+                <input
+                  type="text"
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Describe the changes you want..."
+                  className="flex-1 p-2 border rounded"
+                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                />
+                <button
+                  onClick={sendMessage}
+                  className="p-2 rounded text-white"
+                  style={{ backgroundColor: '#005AA7' }}
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+              {/* Tooltip below input */}
+              <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
+                <Lightbulb className="w-3 h-3" />
+                <span>Try: "Add more detail about..." or "Make it shorter" or "Focus on security aspects"</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Enhanced Replace Warning Modal */}
+      {showReplaceWarning && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <span className="text-yellow-600 font-bold">⚠️</span>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Replace Your Story Draft?
+                </h3>
+              </div>
+              
+              <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded">
+                <p className="text-sm text-yellow-800">
+                  <strong>Warning:</strong> This will completely replace your current story draft including:
+                </p>
+                <ul className="mt-2 text-sm text-yellow-700 list-disc list-inside space-y-1">
+                  <li>Title</li>
+                  <li>Description</li>
+                  <li>Acceptance Criteria</li>
+                  <li>Story Point Estimate</li>
+                </ul>
+              </div>
+              
+              <div className="mb-6">
+                <h4 className="font-medium text-gray-900 mb-2">New Story Content Preview:</h4>
+                <div className="max-h-60 overflow-y-auto bg-gray-50 p-3 rounded border text-sm whitespace-pre-wrap">
+                  {replaceWarningContent}
+                </div>
+              </div>
+              
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={handleCancelReplace}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmReplace}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium"
+                >
+                  Yes, Replace All Fields
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Overlay */}
       {isOpen && (

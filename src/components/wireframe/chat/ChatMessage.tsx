@@ -21,8 +21,14 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
   const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
 
   const handleEditClick = () => {
-    setEditedContent(message.suggestedContent || message.content || '');
-    setIsEditing(true);
+    // Trigger dedicated editing mode in ChatDrawer
+    const event = new CustomEvent('openDedicatedEditor', { 
+      detail: { 
+        content: message.suggestedContent || message.content || '',
+        isStoryReplace: message.isStoryReplace 
+      } 
+    });
+    window.dispatchEvent(event);
   };
 
   const handleApplyEdit = () => {
@@ -40,7 +46,14 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
   };
 
   const handleReplaceStoryClick = () => {
-    setShowReplaceConfirmation(true);
+    // Trigger enhanced warning dialog in ChatDrawer
+    const event = new CustomEvent('showReplaceWarning', { 
+      detail: { 
+        content: message.content,
+        suggestedContent: message.suggestedContent 
+      } 
+    });
+    window.dispatchEvent(event);
   };
 
   const handleConfirmReplace = () => {
@@ -72,37 +85,12 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
               <p className="text-sm text-gray-800 bg-blue-50 p-2 rounded border whitespace-pre-wrap">{message.suggestedContent}</p>
             </div>
             
-            {isEditing && (
-              <div>
-                <p className="text-xs font-semibold text-gray-600 mb-1">Edit Suggestion:</p>
-                <textarea
-                  value={editedContent}
-                  onChange={(e) => setEditedContent(e.target.value)}
-                  className="w-full p-2 text-sm border rounded resize-y min-h-20"
-                  placeholder="Edit the AI suggestion..."
-                />
-                <div className="flex gap-2 mt-2">
-                  <button 
-                    onClick={handleApplyEdit}
-                    className="text-xs bg-green-100 text-green-800 px-3 py-1 rounded hover:bg-green-200"
-                  >
-                    Apply Edit
-                  </button>
-                  <button 
-                    onClick={handleCancelEdit}
-                    className="text-xs bg-gray-100 text-gray-800 px-3 py-1 rounded hover:bg-gray-200"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
         ) : (
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
         )}
         
-        {message.hasActions && message.type === 'ai' && !isEditing && (
+        {message.hasActions && message.type === 'ai' && (
           <div className="flex flex-wrap gap-2 mt-3">
             {message.isStoryReplace ? (
               // Story replacement actions
@@ -212,28 +200,6 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
           </div>
         )}
         
-        {/* Confirmation Dialog */}
-        {showReplaceConfirmation && (
-          <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
-            <p className="text-sm text-yellow-800 mb-3">
-              This will replace your current story draft. Continue?
-            </p>
-            <div className="flex gap-2">
-              <button 
-                onClick={handleConfirmReplace}
-                className="text-xs bg-green-100 text-green-800 px-3 py-1 rounded hover:bg-green-200"
-              >
-                Yes, Replace
-              </button>
-              <button 
-                onClick={handleCancelReplace}
-                className="text-xs bg-gray-100 text-gray-800 px-3 py-1 rounded hover:bg-gray-200"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        )}
       </div>
     </TooltipProvider>
   );
