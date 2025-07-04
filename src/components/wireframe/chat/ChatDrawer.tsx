@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Send, Lightbulb } from 'lucide-react';
 import { ChatMessage } from './ChatMessage';
 
@@ -23,6 +23,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen: externalIsOpen, 
   const [isStoryReplaceEdit, setIsStoryReplaceEdit] = useState(false);
   const [showReplaceWarning, setShowReplaceWarning] = useState(false);
   const [replaceWarningContent, setReplaceWarningContent] = useState('');
+  
+  // Refs for scrolling and focus management
+  const editorRef = useRef<HTMLTextAreaElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Handle external control of drawer
   useEffect(() => {
@@ -146,6 +150,14 @@ This revision adds specific security features, clearer user outcomes, and more d
       setIsDedicatedEditing(true);
       
       console.log('✅ State updated - isDedicatedEditing should be true');
+      
+      // Auto-focus and scroll to editor when it opens
+      setTimeout(() => {
+        if (editorRef.current) {
+          editorRef.current.focus();
+          editorRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
+      }, 100);
     };
 
     const handleShowReplaceWarning = (event: CustomEvent) => {
@@ -438,7 +450,15 @@ This revision enhances security features, adds compliance aspects, and provides 
         </div>
 
         {/* Chat Content */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ height: 'calc(100vh - 200px)' }}>
+        <div 
+          ref={chatContainerRef}
+          className="flex-1 overflow-y-auto p-4 space-y-3" 
+          style={{ 
+            height: isDedicatedEditing 
+              ? 'calc(100vh - 400px)' // Reduced height when editor is active
+              : 'calc(100vh - 200px)'
+          }}
+        >
           {messages.map((message, index) => (
             <ChatMessage 
               key={index} 
@@ -479,15 +499,25 @@ This revision enhances security features, adds compliance aspects, and provides 
                 </div>
               )}
               <textarea
+                ref={editorRef}
                 value={dedicatedEditContent}
                 onChange={(e) => setDedicatedEditContent(e.target.value)}
-                className="w-full p-3 border rounded resize-y text-sm font-mono leading-relaxed"
+                className="w-full p-3 border rounded resize-y text-sm font-mono leading-relaxed focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 rows={isStoryReplaceEdit ? 20 : 12}
                 placeholder={isStoryReplaceEdit ? "Edit the full story content here..." : "Edit the content here..."}
-                autoFocus
+                onKeyDown={(e) => {
+                  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                    e.preventDefault();
+                    handleApplyDedicatedEdit();
+                  } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    handleCancelDedicatedEdit();
+                  }
+                }}
               />
-              <div className="mt-2 text-xs text-gray-500">
-                {dedicatedEditContent.length} characters
+              <div className="mt-2 flex justify-between items-center text-xs text-gray-500">
+                <span>{dedicatedEditContent.length} characters</span>
+                <span>Ctrl/Cmd+Enter to apply • Esc to cancel</span>
               </div>
             </div>
           ) : (
