@@ -324,7 +324,7 @@ This revision enhances security features, adds compliance aspects, and provides 
       });
       window.dispatchEvent(event);
       
-      setConfirmationMessage('Your story draft has been replaced with the edited content.');
+      setConfirmationMessage('Your edited story has been applied and saved to version history.');
     } else {
       const event = new CustomEvent('updateFieldFromAI', { 
         detail: { 
@@ -340,11 +340,12 @@ This revision enhances security features, adds compliance aspects, and provides 
     
     setIsDedicatedEditing(false);
     setDedicatedEditContent('');
+    setIsStoryReplaceEdit(false);
     setShowConfirmation(true);
     setTimeout(() => {
       setShowConfirmation(false);
       setConfirmationMessage('');
-    }, 3000);
+    }, 5000);
   };
 
   const handleCancelDedicatedEdit = () => {
@@ -450,13 +451,22 @@ This revision enhances security features, adds compliance aspects, and provides 
                   </button>
                 </div>
               </div>
+              {isStoryReplaceEdit && (
+                <div className="mb-3 p-2 bg-blue-100 rounded text-xs text-blue-700">
+                  <strong>Format guide:</strong> Keep the **Title:**, **Description:**, **Acceptance Criteria:**, and **Story Point Estimate:** labels intact for proper parsing.
+                </div>
+              )}
               <textarea
                 value={dedicatedEditContent}
                 onChange={(e) => setDedicatedEditContent(e.target.value)}
-                className="w-full p-3 border rounded resize-y text-sm"
-                rows={12}
-                placeholder="Edit the content here..."
+                className="w-full p-3 border rounded resize-y text-sm font-mono leading-relaxed"
+                rows={isStoryReplaceEdit ? 20 : 12}
+                placeholder={isStoryReplaceEdit ? "Edit the full story content here..." : "Edit the content here..."}
+                autoFocus
               />
+              <div className="mt-2 text-xs text-gray-500">
+                {dedicatedEditContent.length} characters
+              </div>
             </div>
           ) : (
             /* Normal Chat Input */

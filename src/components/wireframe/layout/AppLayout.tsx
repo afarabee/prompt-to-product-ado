@@ -89,6 +89,14 @@ export const AppLayout = () => {
     const handleReplaceStoryFromAI = (event: CustomEvent) => {
       const { content } = event.detail;
       
+      // Store previous values for version history
+      const previousStory = {
+        title: fieldValues.title,
+        description: fieldValues.description,
+        acceptanceCriteria: fieldValues.acceptanceCriteria,
+        storyPointEstimate: fieldValues.storyPointEstimate
+      };
+      
       // Parse the AI story content and extract fields
       const parseStoryContent = (content: string) => {
         const titleMatch = content.match(/\*\*Title:\*\*\s*(.+?)(?=\n|\*\*|$)/);
@@ -106,6 +114,7 @@ export const AppLayout = () => {
       
       const parsedStory = parseStoryContent(content);
       
+      // Update field values
       setFieldValues(prev => ({
         ...prev,
         title: parsedStory.title,
@@ -113,6 +122,22 @@ export const AppLayout = () => {
         acceptanceCriteria: parsedStory.acceptanceCriteria,
         storyPointEstimate: parsedStory.storyPointEstimate
       }));
+      
+      // Save to version history
+      const versionEntry = {
+        id: Date.now().toString(),
+        timestamp: new Date().toISOString(),
+        label: 'Story updated via AI Chat (full story edit)',
+        previousValues: previousStory,
+        newValues: parsedStory,
+        changeType: 'ai-story-replacement'
+      };
+      
+      // Trigger version history save event
+      const versionEvent = new CustomEvent('saveToVersionHistory', { 
+        detail: versionEntry 
+      });
+      window.dispatchEvent(versionEvent);
     };
 
     const handleGetFieldValue = (event: CustomEvent) => {
