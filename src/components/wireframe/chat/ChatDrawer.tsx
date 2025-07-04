@@ -136,10 +136,16 @@ This revision adds specific security features, clearer user outcomes, and more d
     };
 
     const handleOpenDedicatedEditor = (event: CustomEvent) => {
+      console.log('🎯 handleOpenDedicatedEditor triggered', event.detail);
       const { content, isStoryReplace } = event.detail;
-      setDedicatedEditContent(content);
-      setIsStoryReplaceEdit(isStoryReplace);
+      console.log('📝 Content to edit:', content);
+      console.log('🔄 Is story replace:', isStoryReplace);
+      
+      setDedicatedEditContent(content || '');
+      setIsStoryReplaceEdit(!!isStoryReplace);
       setIsDedicatedEditing(true);
+      
+      console.log('✅ State updated - isDedicatedEditing should be true');
     };
 
     const handleShowReplaceWarning = (event: CustomEvent) => {
@@ -414,6 +420,22 @@ This revision enhances security features, adds compliance aspects, and provides 
             ✅ {confirmationMessage}
           </div>
         )}
+
+        {/* Debug State Panel */}
+        <div className="p-2 bg-yellow-50 border-b text-xs text-yellow-800">
+          Debug: isDedicatedEditing={String(isDedicatedEditing)} | Content length: {dedicatedEditContent.length} | isStoryReplace: {String(isStoryReplaceEdit)}
+          <button 
+            onClick={() => {
+              console.log('🧪 Test button clicked');
+              setDedicatedEditContent('**Title:** Test Story\n\n**Description:** Test content for debugging\n\n**Acceptance Criteria:** • Test criteria\n\n**Story Point Estimate:** 3');
+              setIsStoryReplaceEdit(true);
+              setIsDedicatedEditing(true);
+            }}
+            className="ml-2 px-2 py-1 bg-yellow-200 rounded text-xs"
+          >
+            Test Editor
+          </button>
+        </div>
 
         {/* Chat Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-3" style={{ height: 'calc(100vh - 200px)' }}>
