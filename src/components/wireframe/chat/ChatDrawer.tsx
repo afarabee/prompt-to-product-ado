@@ -18,14 +18,10 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen: externalIsOpen, 
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const [inputValue, setInputValue] = useState('');
-  const [isDedicatedEditing, setIsDedicatedEditing] = useState(false);
-  const [dedicatedEditContent, setDedicatedEditContent] = useState('');
-  const [isStoryReplaceEdit, setIsStoryReplaceEdit] = useState(false);
   const [showReplaceWarning, setShowReplaceWarning] = useState(false);
   const [replaceWarningContent, setReplaceWarningContent] = useState('');
   
-  // Refs for scrolling and focus management
-  const editorRef = useRef<HTMLTextAreaElement>(null);
+  // Ref for chat container scrolling
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   // Handle external control of drawer
@@ -139,27 +135,6 @@ This revision adds specific security features, clearer user outcomes, and more d
       setInputValue('');
     };
 
-    const handleOpenDedicatedEditor = (event: CustomEvent) => {
-      console.log('🎯 handleOpenDedicatedEditor triggered', event.detail);
-      const { content, isStoryReplace } = event.detail;
-      console.log('📝 Content to edit:', content);
-      console.log('🔄 Is story replace:', isStoryReplace);
-      
-      setDedicatedEditContent(content || '');
-      setIsStoryReplaceEdit(!!isStoryReplace);
-      setIsDedicatedEditing(true);
-      
-      console.log('✅ State updated - isDedicatedEditing should be true');
-      
-      // Auto-focus and scroll to editor when it opens
-      setTimeout(() => {
-        if (editorRef.current) {
-          editorRef.current.focus();
-          editorRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-        }
-      }, 100);
-    };
-
     const handleShowReplaceWarning = (event: CustomEvent) => {
       const { content } = event.detail;
       setReplaceWarningContent(content);
@@ -168,12 +143,10 @@ This revision adds specific security features, clearer user outcomes, and more d
 
     window.addEventListener('openFieldChat', handleOpenFieldChat as EventListener);
     window.addEventListener('openStoryReviewChat', handleOpenStoryReviewChat as EventListener);
-    window.addEventListener('openDedicatedEditor', handleOpenDedicatedEditor as EventListener);
     window.addEventListener('showReplaceWarning', handleShowReplaceWarning as EventListener);
     return () => {
       window.removeEventListener('openFieldChat', handleOpenFieldChat as EventListener);
       window.removeEventListener('openStoryReviewChat', handleOpenStoryReviewChat as EventListener);
-      window.removeEventListener('openDedicatedEditor', handleOpenDedicatedEditor as EventListener);
       window.removeEventListener('showReplaceWarning', handleShowReplaceWarning as EventListener);
     };
   }, []);
@@ -335,42 +308,6 @@ This revision enhances security features, adds compliance aspects, and provides 
     // Simply dismiss the suggestion without changes
   };
 
-  const handleApplyDedicatedEdit = () => {
-    if (isStoryReplaceEdit) {
-      const event = new CustomEvent('replaceStoryFromAI', { 
-        detail: { content: dedicatedEditContent } 
-      });
-      window.dispatchEvent(event);
-      
-      setConfirmationMessage('Your edited story has been applied and saved to version history.');
-    } else {
-      const event = new CustomEvent('updateFieldFromAI', { 
-        detail: { 
-          fieldName: activeField, 
-          action: 'edit', 
-          suggestedContent: dedicatedEditContent
-        } 
-      });
-      window.dispatchEvent(event);
-      
-      setConfirmationMessage('Your field has been updated with the edited content.');
-    }
-    
-    setIsDedicatedEditing(false);
-    setDedicatedEditContent('');
-    setIsStoryReplaceEdit(false);
-    setShowConfirmation(true);
-    setTimeout(() => {
-      setShowConfirmation(false);
-      setConfirmationMessage('');
-    }, 5000);
-  };
-
-  const handleCancelDedicatedEdit = () => {
-    setIsDedicatedEditing(false);
-    setDedicatedEditContent('');
-  };
-
   const handleConfirmReplace = () => {
     const event = new CustomEvent('replaceStoryFromAI', { 
       detail: { content: replaceWarningContent } 
@@ -433,31 +370,11 @@ This revision enhances security features, adds compliance aspects, and provides 
           </div>
         )}
 
-        {/* Debug State Panel */}
-        <div className="p-2 bg-yellow-50 border-b text-xs text-yellow-800">
-          Debug: isDedicatedEditing={String(isDedicatedEditing)} | Content length: {dedicatedEditContent.length} | isStoryReplace: {String(isStoryReplaceEdit)}
-          <button 
-            onClick={() => {
-              console.log('🧪 Test button clicked');
-              setDedicatedEditContent('**Title:** Test Story\n\n**Description:** Test content for debugging\n\n**Acceptance Criteria:** • Test criteria\n\n**Story Point Estimate:** 3');
-              setIsStoryReplaceEdit(true);
-              setIsDedicatedEditing(true);
-            }}
-            className="ml-2 px-2 py-1 bg-yellow-200 rounded text-xs"
-          >
-            Test Editor
-          </button>
-        </div>
-
         {/* Chat Content */}
         <div 
           ref={chatContainerRef}
           className="flex-1 overflow-y-auto p-4 space-y-3" 
-          style={{ 
-            height: isDedicatedEditing 
-              ? 'calc(100vh - 400px)' // Reduced height when editor is active
-              : 'calc(100vh - 200px)'
-          }}
+          style={{ height: 'calc(100vh - 200px)' }}
         >
           {messages.map((message, index) => (
             <ChatMessage 
@@ -471,82 +388,31 @@ This revision enhances security features, adds compliance aspects, and provides 
 
         {/* Input Area at Bottom */}
         <div className="border-t bg-white">
-          {isDedicatedEditing ? (
-            /* Dedicated Editor Mode */
-            <div className="p-4 bg-blue-50 border-t-2 border-blue-200">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-semibold text-blue-800">
-                  {isStoryReplaceEdit ? 'Edit Full Story Before Replacing' : 'Edit Suggestion Before Applying'}
-                </h4>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleApplyDedicatedEdit}
-                    className="text-sm bg-green-100 text-green-800 px-4 py-2 rounded hover:bg-green-200 font-medium"
-                  >
-                    Apply Changes
-                  </button>
-                  <button
-                    onClick={handleCancelDedicatedEdit}
-                    className="text-sm bg-gray-100 text-gray-800 px-4 py-2 rounded hover:bg-gray-200"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-              {isStoryReplaceEdit && (
-                <div className="mb-3 p-2 bg-blue-100 rounded text-xs text-blue-700">
-                  <strong>Format guide:</strong> Keep the **Title:**, **Description:**, **Acceptance Criteria:**, and **Story Point Estimate:** labels intact for proper parsing.
-                </div>
-              )}
-              <textarea
-                ref={editorRef}
-                value={dedicatedEditContent}
-                onChange={(e) => setDedicatedEditContent(e.target.value)}
-                className="w-full p-3 border rounded resize-y text-sm font-mono leading-relaxed focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                rows={isStoryReplaceEdit ? 20 : 12}
-                placeholder={isStoryReplaceEdit ? "Edit the full story content here..." : "Edit the content here..."}
-                onKeyDown={(e) => {
-                  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                    e.preventDefault();
-                    handleApplyDedicatedEdit();
-                  } else if (e.key === 'Escape') {
-                    e.preventDefault();
-                    handleCancelDedicatedEdit();
-                  }
-                }}
+          {/* Normal Chat Input */}
+          <div className="p-4">
+            <div className="flex gap-2 mb-2">
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="Describe the changes you want..."
+                className="flex-1 p-2 border rounded"
+                onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
               />
-              <div className="mt-2 flex justify-between items-center text-xs text-gray-500">
-                <span>{dedicatedEditContent.length} characters</span>
-                <span>Ctrl/Cmd+Enter to apply • Esc to cancel</span>
-              </div>
+              <button
+                onClick={sendMessage}
+                className="p-2 rounded text-white"
+                style={{ backgroundColor: '#005AA7' }}
+              >
+                <Send className="w-4 h-4" />
+              </button>
             </div>
-          ) : (
-            /* Normal Chat Input */
-            <div className="p-4">
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="Describe the changes you want..."
-                  className="flex-1 p-2 border rounded"
-                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                />
-                <button
-                  onClick={sendMessage}
-                  className="p-2 rounded text-white"
-                  style={{ backgroundColor: '#005AA7' }}
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </div>
-              {/* Tooltip below input */}
-              <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
-                <Lightbulb className="w-3 h-3" />
-                <span>Try: "Add more detail about..." or "Make it shorter" or "Focus on security aspects"</span>
-              </div>
+            {/* Tooltip below input */}
+            <div className="flex items-center gap-2 text-xs text-gray-600 mb-2">
+              <Lightbulb className="w-3 h-3" />
+              <span>Try: "Add more detail about..." or "Make it shorter" or "Focus on security aspects"</span>
             </div>
-          )}
+          </div>
         </div>
       </div>
 
