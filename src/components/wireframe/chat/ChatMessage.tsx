@@ -76,7 +76,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
               <textarea
                 value={editedContent}
                 onChange={(e) => setEditedContent(e.target.value)}
-                className="w-full p-3 border rounded resize-y text-sm font-mono leading-relaxed focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                className="w-full p-3 border rounded resize-y text-sm font-mono leading-relaxed focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white mb-4"
                 rows={message.isStoryReplace ? 15 : 8}
                 placeholder={message.isStoryReplace ? "Edit the full story content here..." : "Edit the content here..."}
                 autoFocus
@@ -90,7 +90,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
                   }
                 }}
               />
-              <div className="mt-2 flex justify-between items-center text-xs text-gray-500">
+              <div className="flex justify-between items-center text-xs text-gray-500 mb-4">
                 <span>{editedContent.length} characters</span>
                 <span>Ctrl/Cmd+Enter to apply • Esc to cancel</span>
               </div>
