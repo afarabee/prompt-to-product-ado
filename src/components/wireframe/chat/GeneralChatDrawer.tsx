@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Trash2 } from 'lucide-react';
+import { X, Trash2, HelpCircle } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface GeneralChatDrawerProps {
   isOpen: boolean;
@@ -81,34 +82,42 @@ export const GeneralChatDrawer: React.FC<GeneralChatDrawerProps> = ({ isOpen, on
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex">
-      <div className="flex-1" onClick={onClose} />
-      <div className="w-96 bg-white border-l shadow-lg flex flex-col">
-        {/* Header */}
-        <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
-          <div>
-            <h3 className="font-semibold text-lg">Ask AI!</h3>
-            <p className="text-sm text-gray-600 mt-1">
-              Ask AI anything…use this space to brainstorm, ask platform questions, troubleshoot, or explore ideas unrelated to a specific story.
-            </p>
+    <TooltipProvider>
+      <div className="fixed inset-0 z-50 flex">
+        <div className="flex-1" onClick={onClose} />
+        <div className="w-96 bg-white border-l shadow-lg flex flex-col">
+          {/* Header */}
+          <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-lg">Ask AI!</h3>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="p-1 hover:bg-gray-200 rounded-full transition-colors">
+                    <HelpCircle className="w-4 h-4 text-gray-500" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Ask AI anything…use this space to brainstorm, ask platform questions, troubleshoot, or explore ideas unrelated to a specific story.</p>
+                </TooltipContent>
+              </Tooltip>
+            </div>
+            <div className="flex items-center gap-2 ml-4">
+              <button
+                onClick={clearConversation}
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+                title="Clear Conversation"
+                disabled={messages.length === 0}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-          <div className="flex items-center gap-2 ml-4">
-            <button
-              onClick={clearConversation}
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-              title="Clear Conversation"
-              disabled={messages.length === 0}
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
 
         {/* Chat Messages */}
         <div 
@@ -178,7 +187,8 @@ export const GeneralChatDrawer: React.FC<GeneralChatDrawerProps> = ({ isOpen, on
             This is a general AI assistant. Conversations are independent of your story work.
           </div>
         </div>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };
