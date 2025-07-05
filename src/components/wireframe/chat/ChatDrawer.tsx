@@ -374,7 +374,7 @@ This revision enhances security features, adds compliance aspects, and provides 
         <div 
           ref={chatContainerRef}
           className="flex-1 overflow-y-auto px-4 pt-4 pb-6 space-y-3" 
-          style={{ height: 'calc(100vh - 200px)' }}
+          style={{ height: 'calc(100vh - 240px)' }}
         >
           {messages.map((message, index) => (
             <ChatMessage 
