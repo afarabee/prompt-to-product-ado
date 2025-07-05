@@ -25,7 +25,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         >
           <div className="flex items-center gap-2">
             <MessageSquare className="w-4 h-4" />
-            AI Chat
+            Ask AI!
           </div>
         </button>
         

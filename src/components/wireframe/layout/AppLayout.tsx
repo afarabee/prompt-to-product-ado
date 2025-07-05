@@ -5,6 +5,7 @@ import { AppSidebar } from './AppSidebar';
 import { RawInputSection } from '../sections/RawInputSection';
 import { GeneratedStorySection } from '../sections/GeneratedStorySection';
 import { ChatDrawer } from '../chat/ChatDrawer';
+import { GeneralChatDrawer } from '../chat/GeneralChatDrawer';
 import { VersionHistorySidebar } from '../sidebars/VersionHistorySidebar';
 import { UserManagementModal } from '../modals/UserManagementModal';
 import { DependencyNotification } from '../fields/DependencyNotification';
@@ -14,6 +15,7 @@ export const AppLayout = () => {
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showUserManagement, setShowUserManagement] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
+  const [showGeneralAIChat, setShowGeneralAIChat] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [storyGenerated, setStoryGenerated] = useState(false);
 
@@ -254,7 +256,10 @@ export const AppLayout = () => {
         <AppSidebar 
           onVersionHistoryClick={() => setShowVersionHistory(true)}
           onUserManagementClick={() => setShowUserManagement(true)}
-          onAIChatClick={() => setShowAIChat(true)}
+          onAIChatClick={() => {
+            setShowGeneralAIChat(true);
+            setShowAIChat(false); // Close story chat if open
+          }}
         />
         
         <main className="flex-1 overflow-auto">
@@ -299,6 +304,11 @@ export const AppLayout = () => {
       <ChatDrawer 
         isOpen={showAIChat}
         onClose={() => setShowAIChat(false)}
+      />
+      
+      <GeneralChatDrawer 
+        isOpen={showGeneralAIChat}
+        onClose={() => setShowGeneralAIChat(false)}
       />
       
       <VersionHistorySidebar 
