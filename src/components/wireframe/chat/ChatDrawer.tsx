@@ -49,26 +49,11 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen: externalIsOpen, 
       setStoryContext(null);
       setIsOpen(true);
       
-      // Add sample conversation data
+      // Add initial greeting message only
       const sampleMessages = [
         {
           type: 'ai' as const,
           content: `Hi! I'm here to help you refine the ${label.toLowerCase()} field. What specific changes would you like to make?`
-        },
-        {
-          type: 'user' as const,
-          content: 'Can you make the description more focused on security aspects?'
-        },
-        {
-          type: 'ai' as const,
-          content: `I suggest updating the ${label.toLowerCase()} to emphasize security features. Here's my proposed change:
-
-Current: "As a product owner, I want enhanced user management so that users can securely manage access."
-
-Suggested: "As a product owner, I want comprehensive user management functionality with robust security controls, including multi-factor authentication, role-based permissions, and audit logging so that I can ensure secure access management across the platform."
-
-This change adds specific security elements like MFA, role-based permissions, and audit logging.`,
-          hasActions: true
         }
       ];
       
