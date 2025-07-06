@@ -14,15 +14,17 @@ interface ChatMessageProps {
   };
   onAccept?: (action: 'replace' | 'append' | 'edit' | 'replaceStory', editedContent?: string) => void;
   onReject?: () => void;
+  confirmationMessage?: string;
 }
 
-export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onReject }) => {
+export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onReject, confirmationMessage }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState('');
   const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
   const [showCurrentContent, setShowCurrentContent] = useState(false);
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
   const [localEditedSuggestion, setLocalEditedSuggestion] = useState<string | null>(null);
+  const [showFieldReplaceWarning, setShowFieldReplaceWarning] = useState(false);
 
   const handleEditClick = () => {
     setEditedContent(localEditedSuggestion || message.suggestedContent || message.content || '');
@@ -56,13 +58,17 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
     window.dispatchEvent(event);
   };
 
-  const handleConfirmReplace = () => {
-    onAccept?.('replaceStory');
-    setShowReplaceConfirmation(false);
+  const handleFieldReplaceClick = () => {
+    setShowFieldReplaceWarning(true);
   };
 
-  const handleCancelReplace = () => {
-    setShowReplaceConfirmation(false);
+  const handleConfirmFieldReplace = () => {
+    onAccept?.('replace', localEditedSuggestion || undefined);
+    setShowFieldReplaceWarning(false);
+  };
+
+  const handleCancelFieldReplace = () => {
+    setShowFieldReplaceWarning(false);
   };
 
   return (
@@ -168,6 +174,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
                 </p>
               </div>
             </div>
+            
+            {/* Confirmation Message - appears below AI suggestion */}
+            {confirmationMessage && (
+              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded text-sm text-green-800">
+                ✅ {confirmationMessage}
+              </div>
+            )}
           </div>
         ) : (
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -230,7 +243,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
                    <Tooltip>
                      <TooltipTrigger asChild>
                        <button 
-                         onClick={() => onAccept?.('replace', localEditedSuggestion || undefined)}
+                         onClick={handleFieldReplaceClick}
                          onMouseEnter={() => setHoveredButton('suggestion')}
                          onMouseLeave={() => setHoveredButton(null)}
                          className="text-xs bg-green-100 text-green-800 px-3 py-1 rounded hover:bg-green-200 flex items-center gap-1 transition-all duration-200"
@@ -295,6 +308,52 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
         )}
         
       </div>
+      
+      {/* Field Replace Confirmation Dialog */}
+      {showFieldReplaceWarning && (
+        <div className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <span className="text-yellow-600 font-bold">⚠️</span>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Replace Field Content?
+                </h3>
+              </div>
+              
+              <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded">
+                <p className="text-sm text-yellow-800">
+                  <strong>Warning:</strong> This will completely replace the current field content with the AI suggestion.
+                </p>
+              </div>
+              
+              <div className="mb-6">
+                <h4 className="font-medium text-gray-900 mb-2">New Content Preview:</h4>
+                <div className="max-h-32 overflow-y-auto bg-gray-50 p-3 rounded border text-sm whitespace-pre-wrap">
+                  {localEditedSuggestion || message.suggestedContent}
+                </div>
+              </div>
+              
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={handleCancelFieldReplace}
+                  className="px-4 py-2 text-gray-700 bg-gray-100 rounded hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmFieldReplace}
+                  className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 font-medium"
+                >
+                  Yes, Replace Field
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </TooltipProvider>
   );
 };

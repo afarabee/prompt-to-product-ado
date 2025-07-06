@@ -349,12 +349,6 @@ This revision enhances security features, adds compliance aspects, and provides 
           </div>
         )}
 
-        {showConfirmation && (
-          <div className="p-3 bg-green-50 border-b text-sm text-green-800">
-            ✅ {confirmationMessage}
-          </div>
-        )}
-
         {/* Chat Content */}
         <div 
           ref={chatContainerRef}
@@ -367,6 +361,11 @@ This revision enhances security features, adds compliance aspects, and provides 
               message={message} 
               onAccept={handleAcceptChanges}
               onReject={handleRejectChanges}
+              confirmationMessage={
+                message.hasActions && message.type === 'ai' && showConfirmation && index === messages.length - 1 
+                  ? confirmationMessage 
+                  : undefined
+              }
             />
           ))}
         </div>
