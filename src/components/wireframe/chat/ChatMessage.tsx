@@ -22,19 +22,22 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
   const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
   const [showCurrentContent, setShowCurrentContent] = useState(false);
   const [hoveredButton, setHoveredButton] = useState<string | null>(null);
+  const [localEditedSuggestion, setLocalEditedSuggestion] = useState<string | null>(null);
 
   const handleEditClick = () => {
-    setEditedContent(message.suggestedContent || message.content || '');
+    setEditedContent(localEditedSuggestion || message.suggestedContent || message.content || '');
     setIsEditing(true);
   };
 
   const handleApplyEdit = () => {
     if (message.isStoryReplace) {
       onAccept?.('replaceStory', editedContent);
+      setIsEditing(false);
     } else {
-      onAccept?.('edit', editedContent);
+      // For field-level editing, update local state and show action buttons
+      setLocalEditedSuggestion(editedContent);
+      setIsEditing(false);
     }
-    setIsEditing(false);
   };
 
   const handleCancelEdit = () => {
@@ -152,7 +155,14 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
                 <p className="text-sm font-bold text-gray-800">AI Suggestion:</p>
               </div>
               <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
-                <p className="text-sm text-gray-800 whitespace-pre-wrap mb-3">{message.suggestedContent}</p>
+                <p className="text-sm text-gray-800 whitespace-pre-wrap mb-3">
+                  {localEditedSuggestion || message.suggestedContent}
+                </p>
+                {localEditedSuggestion && (
+                  <p className="text-xs text-green-700 bg-green-100 px-2 py-1 rounded inline-block mb-2">
+                    ✏️ Content edited - ready to apply to field
+                  </p>
+                )}
                 <p className="text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded inline-block">
                   💡 This content will be applied to the field when you click an action button below
                 </p>
@@ -217,37 +227,37 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
                   Apply the AI suggestion to your draft field:
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button 
-                        onClick={() => onAccept?.('replace')}
-                        onMouseEnter={() => setHoveredButton('suggestion')}
-                        onMouseLeave={() => setHoveredButton(null)}
-                        className="text-xs bg-green-100 text-green-800 px-3 py-1 rounded hover:bg-green-200 flex items-center gap-1 transition-all duration-200"
-                      >
-                        ✅ Replace Field
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Replace the field with the AI suggestion shown above</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button 
-                        onClick={() => onAccept?.('append')}
-                        onMouseEnter={() => setHoveredButton('suggestion')}
-                        onMouseLeave={() => setHoveredButton(null)}
-                        className="text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded hover:bg-blue-200 flex items-center gap-1 transition-all duration-200"
-                      >
-                        ➕ Append to Field
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Add the AI suggestion to the end of the current field content</p>
-                    </TooltipContent>
-                  </Tooltip>
+                   <Tooltip>
+                     <TooltipTrigger asChild>
+                       <button 
+                         onClick={() => onAccept?.('replace', localEditedSuggestion || undefined)}
+                         onMouseEnter={() => setHoveredButton('suggestion')}
+                         onMouseLeave={() => setHoveredButton(null)}
+                         className="text-xs bg-green-100 text-green-800 px-3 py-1 rounded hover:bg-green-200 flex items-center gap-1 transition-all duration-200"
+                       >
+                         ✅ Replace Field
+                       </button>
+                     </TooltipTrigger>
+                     <TooltipContent>
+                       <p>Replace the field with the AI suggestion shown above</p>
+                     </TooltipContent>
+                   </Tooltip>
+                   
+                   <Tooltip>
+                     <TooltipTrigger asChild>
+                       <button 
+                         onClick={() => onAccept?.('append', localEditedSuggestion || undefined)}
+                         onMouseEnter={() => setHoveredButton('suggestion')}
+                         onMouseLeave={() => setHoveredButton(null)}
+                         className="text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded hover:bg-blue-200 flex items-center gap-1 transition-all duration-200"
+                       >
+                         ➕ Append to Field
+                       </button>
+                     </TooltipTrigger>
+                     <TooltipContent>
+                       <p>Add the AI suggestion to the end of the current field content</p>
+                     </TooltipContent>
+                   </Tooltip>
                   
                   <Tooltip>
                     <TooltipTrigger asChild>
