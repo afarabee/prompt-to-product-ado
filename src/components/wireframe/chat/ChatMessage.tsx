@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ChatMessageProps {
@@ -19,6 +20,8 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
   const [isEditing, setIsEditing] = useState(false);
   const [editedContent, setEditedContent] = useState('');
   const [showReplaceConfirmation, setShowReplaceConfirmation] = useState(false);
+  const [showCurrentContent, setShowCurrentContent] = useState(false);
+  const [hoveredButton, setHoveredButton] = useState<string | null>(null);
 
   const handleEditClick = () => {
     setEditedContent(message.suggestedContent || message.content || '');
@@ -113,18 +116,48 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
             </div>
           </div>
         ) : message.hasActions && message.currentContent !== undefined && message.suggestedContent ? (
-          <div className="space-y-3">
-            <div>
-              <p className="text-xs font-semibold text-gray-600 mb-1">Current:</p>
-              <p className="text-sm text-gray-700 bg-white p-2 rounded border whitespace-pre-wrap">
-                {message.currentContent || '(Empty)'}
-              </p>
+          <div className="space-y-4">
+            {/* Collapsible Current Content */}
+            {message.currentContent && message.currentContent.trim() && (
+              <div className="space-y-2">
+                <button
+                  onClick={() => setShowCurrentContent(!showCurrentContent)}
+                  className="flex items-center gap-2 text-xs font-medium text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  {showCurrentContent ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                  {showCurrentContent ? 'Hide current content' : 'Show current content'}
+                  {!showCurrentContent && (
+                    <span className="text-gray-500 font-normal">
+                      ({message.currentContent.slice(0, 50)}{message.currentContent.length > 50 ? '...' : ''})
+                    </span>
+                  )}
+                </button>
+                {showCurrentContent && (
+                  <div className="pl-5">
+                    <p className="text-xs font-semibold text-gray-600 mb-1">Current field content:</p>
+                    <p className="text-sm text-gray-700 bg-white p-3 rounded border whitespace-pre-wrap">
+                      {message.currentContent}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Prominently Highlighted AI Suggestion */}
+            <div className={`transition-all duration-200 ${
+              hoveredButton === 'suggestion' ? 'ring-2 ring-blue-300 ring-opacity-50' : ''
+            }`}>
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles className="w-4 h-4 text-blue-600" />
+                <p className="text-sm font-bold text-gray-800">AI Suggestion:</p>
+              </div>
+              <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+                <p className="text-sm text-gray-800 whitespace-pre-wrap mb-3">{message.suggestedContent}</p>
+                <p className="text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded inline-block">
+                  💡 This content will be applied to the field when you click an action button below
+                </p>
+              </div>
             </div>
-            <div>
-              <p className="text-xs font-semibold text-gray-600 mb-1">Suggested:</p>
-              <p className="text-sm text-gray-800 bg-blue-50 p-2 rounded border whitespace-pre-wrap">{message.suggestedContent}</p>
-            </div>
-            
           </div>
         ) : (
           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
@@ -178,64 +211,75 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
                 </Tooltip>
               </>
             ) : (
-              // Field-level actions
-              <>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button 
-                      onClick={() => onAccept?.('replace')}
-                      className="text-xs bg-green-100 text-green-800 px-3 py-1 rounded hover:bg-green-200 flex items-center gap-1"
-                    >
-                      ✅ Replace Field
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Replace this field with the full AI suggestion.</p>
-                  </TooltipContent>
-                </Tooltip>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button 
-                      onClick={() => onAccept?.('append')}
-                      className="text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded hover:bg-blue-200 flex items-center gap-1"
-                    >
-                      ➕ Append to Field
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Add the AI suggestion to the end of this field.</p>
-                  </TooltipContent>
-                </Tooltip>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button 
-                      onClick={handleEditClick}
-                      className="text-xs bg-yellow-100 text-yellow-800 px-3 py-1 rounded hover:bg-yellow-200 flex items-center gap-1"
-                    >
-                      ✏️ Edit Before Inserting
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Review and edit this suggestion before applying it.</p>
-                  </TooltipContent>
-                </Tooltip>
-                
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button 
-                      onClick={onReject}
-                      className="text-xs bg-red-100 text-red-800 px-3 py-1 rounded hover:bg-red-200 flex items-center gap-1"
-                    >
-                      ❌ Cancel
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Discard this suggestion and close the panel.</p>
-                  </TooltipContent>
-                </Tooltip>
-              </>
+              // Field-level actions with enhanced UX
+              <div className="space-y-2">
+                <p className="text-xs text-gray-600 font-medium">
+                  Apply the AI suggestion to your draft field:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button 
+                        onClick={() => onAccept?.('replace')}
+                        onMouseEnter={() => setHoveredButton('suggestion')}
+                        onMouseLeave={() => setHoveredButton(null)}
+                        className="text-xs bg-green-100 text-green-800 px-3 py-1 rounded hover:bg-green-200 flex items-center gap-1 transition-all duration-200"
+                      >
+                        ✅ Replace Field
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Replace the field with the AI suggestion shown above</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button 
+                        onClick={() => onAccept?.('append')}
+                        onMouseEnter={() => setHoveredButton('suggestion')}
+                        onMouseLeave={() => setHoveredButton(null)}
+                        className="text-xs bg-blue-100 text-blue-800 px-3 py-1 rounded hover:bg-blue-200 flex items-center gap-1 transition-all duration-200"
+                      >
+                        ➕ Append to Field
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Add the AI suggestion to the end of the current field content</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button 
+                        onClick={handleEditClick}
+                        onMouseEnter={() => setHoveredButton('suggestion')}
+                        onMouseLeave={() => setHoveredButton(null)}
+                        className="text-xs bg-yellow-100 text-yellow-800 px-3 py-1 rounded hover:bg-yellow-200 flex items-center gap-1 transition-all duration-200"
+                      >
+                        ✏️ Edit Before Inserting
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Modify the AI suggestion before applying it to the field</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button 
+                        onClick={onReject}
+                        className="text-xs bg-red-100 text-red-800 px-3 py-1 rounded hover:bg-red-200 flex items-center gap-1 transition-all duration-200"
+                      >
+                        ❌ Cancel
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Discard this suggestion and close the panel</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
             )}
           </div>
         )}
