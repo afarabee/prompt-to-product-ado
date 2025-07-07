@@ -210,18 +210,15 @@ export const AppLayout = () => {
   };
 
   const handleGenerateStory = () => {
-    if (previewMode) {
-      // Generate sample data only in Preview Mode ON
-      setFieldValues(prev => ({
-        ...prev,
-        title: "Enhanced User Management System",
-        description: "As a product owner, I want comprehensive user management functionality, including role assignments, permission controls, and mobile responsive interface so that I can efficiently manage team access across all devices.",
-        acceptanceCriteria: "• User can assign and modify roles for team members\n• System displays confirmation when permissions are updated\n• Interface adapts to mobile devices with touch-friendly controls\n• Admin can export user access reports in CSV format\n• All user management actions are logged for audit purposes",
-        storyPointEstimate: "5"
-      }));
-      setStoryGenerated(true);
-    }
-    // In Preview Mode OFF, button is functional but doesn't populate fields
+    // Generate sample data in both Preview Mode ON and OFF
+    setFieldValues(prev => ({
+      ...prev,
+      title: "Enhanced User Management System",
+      description: "As a product owner, I want comprehensive user management functionality, including role assignments, permission controls, and mobile responsive interface so that I can efficiently manage team access across all devices.",
+      acceptanceCriteria: "• User can assign and modify roles for team members\n• System displays confirmation when permissions are updated\n• Interface adapts to mobile devices with touch-friendly controls\n• Admin can export user access reports in CSV format\n• All user management actions are logged for audit purposes",
+      storyPointEstimate: "5"
+    }));
+    setStoryGenerated(true);
   };
 
   const handleStartOver = () => {
