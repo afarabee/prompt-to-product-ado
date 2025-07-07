@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Minus, MessageSquare, Send } from 'lucide-react';
+import { X, Minus, MessageSquare, Send, Undo } from 'lucide-react';
 import { ChatMessage } from '../chat/ChatMessage';
 import { SuggestionMessage } from '../chat/SuggestionMessage';
+import { EditableMessage } from '../chat/EditableMessage';
+import { CancellationMessage } from '../chat/CancellationMessage';
+import { MultiFieldSuggestion } from '../chat/MultiFieldSuggestion';
 import { ConfirmationToast } from '../chat/ConfirmationToast';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +31,15 @@ interface Message {
     affectedField: string;
     currentValue: string;
   };
+  multiFieldSuggestions?: Array<{
+    fieldName: string;
+    currentValue: string;
+    suggestedContent: string;
+  }>;
+  messageType?: 'regular' | 'suggestion' | 'multiField' | 'cancellation' | 'confirmation';
+  isEditing?: boolean;
+  editContent?: string;
+  canceled?: boolean;
 }
 
 export const StoryReviewPanel: React.FC<StoryReviewPanelProps> = ({
@@ -42,10 +54,13 @@ export const StoryReviewPanel: React.FC<StoryReviewPanelProps> = ({
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
-  const [showConfirmation, setShowConfirmation] = useState<{
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [confirmations, setConfirmations] = useState<Array<{
+    id: string;
     fieldName: string;
     message: string;
-  } | null>(null);
+    timestamp: Date;
+  }>>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Add initial AI greeting when panel opens with a story
@@ -76,7 +91,7 @@ What would you like to work on first?`,
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, showConfirmation]);
+  }, [messages, confirmations]);
 
   const handleSend = () => {
     if (!inputValue.trim()) return;
@@ -96,9 +111,10 @@ What would you like to work on first?`,
     setTimeout(() => {
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: `Based on your request, here's a stronger version of the Description:\n\n"As a product owner, I want role-based user management with mobile-friendly controls and exportable audit logs, so I can securely manage team access across devices."`,
+        content: `Here's a stronger version of the Description:\n\n"As a product owner, I want role-based user management with mobile-friendly controls and exportable audit logs, so I can securely manage team access across devices."`,
         isUser: false,
         timestamp: new Date(),
+        messageType: 'suggestion',
         suggestion: {
           affectedField: 'Description',
           currentValue: story?.description || ''
@@ -118,19 +134,31 @@ What would you like to work on first?`,
 
   const handleSuggestionAction = (action: 'replace' | 'edit' | 'cancel', message: Message) => {
     if (action === 'cancel') {
+      // Add cancellation message to chat
+      const cancellationMessage: Message = {
+        id: `cancel-${Date.now()}`,
+        content: `Change suggestion for ${message.suggestion?.affectedField} was canceled.`,
+        isUser: false,
+        timestamp: new Date(),
+        messageType: 'cancellation',
+        canceled: true
+      };
+      setMessages(prev => [...prev, cancellationMessage]);
       return;
     }
 
     if (action === 'edit') {
-      // Extract clean content and trigger edit mode
-      const cleanContent = message.content.split('\n\n')[1]?.replace(/"/g, '') || message.content;
-      const editEvent = new CustomEvent('editFieldContent', {
-        detail: {
-          fieldName: message.suggestion?.affectedField.toLowerCase(),
-          suggestedContent: cleanContent
-        }
-      });
-      window.dispatchEvent(editEvent);
+      // Switch to editing mode
+      setEditingMessageId(message.id);
+      setMessages(prev => prev.map(msg => 
+        msg.id === message.id 
+          ? { 
+              ...msg, 
+              isEditing: true, 
+              editContent: message.content.split('\n\n')[1]?.replace(/"/g, '') || message.content 
+            }
+          : msg
+      ));
       return;
     }
 
@@ -151,45 +179,122 @@ What would you like to work on first?`,
           detail: {
             fieldName: message.suggestion.affectedField.toLowerCase(),
             action: 'replace',
-            suggestedContent: message.content.split('\n\n')[1].replace(/"/g, '')
+            suggestedContent: message.content.split('\n\n')[1]?.replace(/"/g, '') || message.content
           }
         });
         window.dispatchEvent(updateEvent);
 
-        // Show confirmation
-        const confirmEvent = new CustomEvent('showConfirmation', {
-          detail: {
-            fieldName: message.suggestion.affectedField,
-            previousValue: message.suggestion.currentValue,
-            newValue: message.content.split('\n\n')[1].replace(/"/g, '')
-          }
-        });
-        window.dispatchEvent(confirmEvent);
+        // Add confirmation message to chat
+        const confirmationMessage: Message = {
+          id: `confirm-${Date.now()}`,
+          content: '',
+          isUser: false,
+          timestamp: new Date(),
+          messageType: 'confirmation'
+        };
+        setMessages(prev => [...prev, confirmationMessage]);
 
-        setShowConfirmation({
+        // Add to confirmations state
+        setConfirmations(prev => [...prev, {
+          id: `confirm-${Date.now()}`,
           fieldName: message.suggestion.affectedField,
-          message: `Changes successfully applied to ${message.suggestion.affectedField}`
-        });
+          message: `${message.suggestion.affectedField} has been updated.`,
+          timestamp: new Date()
+        }]);
 
-        // Auto-hide confirmation
+        // Auto-hide confirmation after 10 seconds
         setTimeout(() => {
-          setShowConfirmation(null);
+          setConfirmations(prev => prev.slice(1));
         }, 10000);
       }
 
       setActionLoading(false);
-    }, 250); // Visual continuity delay
+    }, 250);
   };
 
-  const handleUndo = () => {
-    if (!showConfirmation) return;
+  const handleEditApply = (messageId: string, editedContent: string) => {
+    const message = messages.find(m => m.id === messageId);
+    if (!message?.suggestion) return;
+
+    setActionLoading(true);
+
+    // Highlight the field
+    const highlightEvent = new CustomEvent('highlightField', {
+      detail: { fieldName: message.suggestion.affectedField.toLowerCase() }
+    });
+    window.dispatchEvent(highlightEvent);
+
+    setTimeout(() => {
+      // Update the field with edited content
+      const updateEvent = new CustomEvent('updateFieldFromAI', {
+        detail: {
+          fieldName: message.suggestion.affectedField.toLowerCase(),
+          action: 'replace',
+          suggestedContent: editedContent
+        }
+      });
+      window.dispatchEvent(updateEvent);
+
+      // Add confirmation message
+      const confirmationMessage: Message = {
+        id: `confirm-${Date.now()}`,
+        content: '',
+        isUser: false,
+        timestamp: new Date(),
+        messageType: 'confirmation'
+      };
+      setMessages(prev => [...prev, confirmationMessage]);
+
+      // Add to confirmations
+      setConfirmations(prev => [...prev, {
+        id: `confirm-${Date.now()}`,
+        fieldName: message.suggestion.affectedField,
+        message: `${message.suggestion.affectedField} has been updated.`,
+        timestamp: new Date()
+      }]);
+
+      // Exit editing mode
+      setEditingMessageId(null);
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { ...msg, isEditing: false, editContent: undefined }
+          : msg
+      ));
+
+      setActionLoading(false);
+    }, 250);
+  };
+
+  const handleEditCancel = (messageId: string) => {
+    setEditingMessageId(null);
+    setMessages(prev => prev.map(msg => 
+      msg.id === messageId 
+        ? { ...msg, isEditing: false, editContent: undefined }
+        : msg
+    ));
+  };
+
+  const handleUndo = (confirmationId: string) => {
+    const confirmation = confirmations.find(c => c.id === confirmationId);
+    if (!confirmation) return;
 
     const undoEvent = new CustomEvent('triggerUndo', {
-      detail: { fieldName: showConfirmation.fieldName.toLowerCase() }
+      detail: { fieldName: confirmation.fieldName.toLowerCase() }
     });
     window.dispatchEvent(undoEvent);
 
-    setShowConfirmation(null);
+    // Add undo message to chat
+    const undoMessage: Message = {
+      id: `undo-${Date.now()}`,
+      content: `↩️ Reverted changes to ${confirmation.fieldName}.`,
+      isUser: false,
+      timestamp: new Date(),
+      messageType: 'regular'
+    };
+    setMessages(prev => [...prev, undoMessage]);
+
+    // Remove confirmation
+    setConfirmations(prev => prev.filter(c => c.id !== confirmationId));
   };
 
   if (!isOpen) return null;
@@ -251,7 +356,41 @@ What would you like to work on first?`,
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message) => (
             <div key={message.id} className="space-y-2">
-              {message.suggestion ? (
+              {message.messageType === 'cancellation' ? (
+                <CancellationMessage
+                  fieldName={message.content.split('Change suggestion for ')[1]?.split(' was canceled.')[0] || 'Field'}
+                  timestamp={message.timestamp}
+                />
+              ) : message.messageType === 'confirmation' ? (
+                // Skip rendering confirmation messages here, they're handled below
+                null
+              ) : message.isEditing ? (
+                <EditableMessage
+                  content={message.editContent || message.content}
+                  affectedField={message.suggestion?.affectedField || 'Field'}
+                  onApply={(editedContent) => handleEditApply(message.id, editedContent)}
+                  onCancel={() => handleEditCancel(message.id)}
+                  isLoading={actionLoading}
+                />
+              ) : message.multiFieldSuggestions ? (
+                <MultiFieldSuggestion
+                  suggestions={message.multiFieldSuggestions}
+                  messageId={message.id}
+                  onReplace={(fieldName, content) => {
+                    // Handle multi-field replace
+                    console.log('Multi-field replace:', fieldName, content);
+                  }}
+                  onEdit={(fieldName, content) => {
+                    // Handle multi-field edit
+                    console.log('Multi-field edit:', fieldName, content);
+                  }}
+                  onCancel={(fieldName) => {
+                    // Handle multi-field cancel
+                    console.log('Multi-field cancel:', fieldName);
+                  }}
+                  isLoading={actionLoading}
+                />
+              ) : message.suggestion ? (
                 <SuggestionMessage
                   content={message.content}
                   affectedField={message.suggestion.affectedField}
@@ -272,13 +411,30 @@ What would you like to work on first?`,
             </div>
           ))}
           
-          {showConfirmation && (
-            <ConfirmationToast
-              fieldName={showConfirmation.fieldName}
-              onUndo={handleUndo}
-              onDismiss={() => setShowConfirmation(null)}
-            />
-          )}
+          {/* Confirmation Messages */}
+          {confirmations.map((confirmation) => (
+            <div key={confirmation.id} className="bg-green-50 border border-green-200 rounded-lg p-4 animate-fade-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                  </div>
+                  <span className="text-green-800 font-medium">
+                    ✅ {confirmation.message}
+                  </span>
+                </div>
+                
+                <button
+                  onClick={() => handleUndo(confirmation.id)}
+                  className="flex items-center gap-1 px-2 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                  title="Undo this change"
+                >
+                  <Undo className="w-3 h-3" />
+                  Undo
+                </button>
+              </div>
+            </div>
+          ))}
           
           {isTyping && (
             <div className="flex items-center gap-2 text-gray-500">
@@ -342,7 +498,22 @@ What would you like to work on first?`,
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message) => (
             <div key={message.id} className="space-y-2">
-              {message.suggestion ? (
+              {message.messageType === 'cancellation' ? (
+                <CancellationMessage
+                  fieldName={message.content.split('Change suggestion for ')[1]?.split(' was canceled.')[0] || 'Field'}
+                  timestamp={message.timestamp}
+                />
+              ) : message.messageType === 'confirmation' ? (
+                null
+              ) : message.isEditing ? (
+                <EditableMessage
+                  content={message.editContent || message.content}
+                  affectedField={message.suggestion?.affectedField || 'Field'}
+                  onApply={(editedContent) => handleEditApply(message.id, editedContent)}
+                  onCancel={() => handleEditCancel(message.id)}
+                  isLoading={actionLoading}
+                />
+              ) : message.suggestion ? (
                 <SuggestionMessage
                   content={message.content}
                   affectedField={message.suggestion.affectedField}
@@ -363,13 +534,30 @@ What would you like to work on first?`,
             </div>
           ))}
           
-          {showConfirmation && (
-            <ConfirmationToast
-              fieldName={showConfirmation.fieldName}
-              onUndo={handleUndo}
-              onDismiss={() => setShowConfirmation(null)}
-            />
-          )}
+          {/* Confirmation Messages */}
+          {confirmations.map((confirmation) => (
+            <div key={confirmation.id} className="bg-green-50 border border-green-200 rounded-lg p-4 animate-fade-in">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                  </div>
+                  <span className="text-green-800 font-medium">
+                    ✅ {confirmation.message}
+                  </span>
+                </div>
+                
+                <button
+                  onClick={() => handleUndo(confirmation.id)}
+                  className="flex items-center gap-1 px-2 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                  title="Undo this change"
+                >
+                  <Undo className="w-3 h-3" />
+                  Undo
+                </button>
+              </div>
+            </div>
+          ))}
           
           {isTyping && (
             <div className="flex items-center gap-2 text-gray-500">

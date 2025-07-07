@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Check, Edit, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { DiffView } from './DiffView';
+import { InlineDiffView } from './InlineDiffView';
 
 interface SuggestionMessageProps {
   content: string;
@@ -22,6 +23,7 @@ export const SuggestionMessage: React.FC<SuggestionMessageProps> = ({
   isLoading = false
 }) => {
   const [showDiff, setShowDiff] = useState(false);
+  const [diffMode, setDiffMode] = useState<'side-by-side' | 'inline'>('side-by-side');
 
   return (
     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-4">
@@ -33,21 +35,58 @@ export const SuggestionMessage: React.FC<SuggestionMessageProps> = ({
       </div>
 
       {/* What Changed Toggle */}
-      <button
-        onClick={() => setShowDiff(!showDiff)}
-        className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
-      >
-        {showDiff ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-        What changed? {showDiff ? 'Hide preview' : 'Show preview'}
-      </button>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => setShowDiff(!showDiff)}
+          className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 transition-colors"
+        >
+          {showDiff ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          What changed? {showDiff ? 'Hide preview' : 'Show preview'}
+        </button>
+        
+        {showDiff && (
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setDiffMode('side-by-side')}
+              className={`px-2 py-1 text-xs rounded ${
+                diffMode === 'side-by-side' 
+                  ? 'bg-blue-100 text-blue-800' 
+                  : 'text-gray-600 hover:text-blue-600'
+              }`}
+            >
+              Side by side
+            </button>
+            <button
+              onClick={() => setDiffMode('inline')}
+              className={`px-2 py-1 text-xs rounded ${
+                diffMode === 'inline' 
+                  ? 'bg-blue-100 text-blue-800' 
+                  : 'text-gray-600 hover:text-blue-600'
+              }`}
+            >
+              Inline diff
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* Diff View */}
       {showDiff && (
-        <DiffView
-          originalContent={currentValue}
-          newContent={content.split('\n\n').slice(1).join('\n\n') || content}
-          fieldName={affectedField}
-        />
+        <>
+          {diffMode === 'side-by-side' ? (
+            <DiffView
+              originalContent={currentValue}
+              newContent={content.split('\n\n').slice(1).join('\n\n') || content}
+              fieldName={affectedField}
+            />
+          ) : (
+            <InlineDiffView
+              originalContent={currentValue}
+              newContent={content.split('\n\n').slice(1).join('\n\n') || content}
+              fieldName={affectedField}
+            />
+          )}
+        </>
       )}
 
       {/* Action Buttons */}
