@@ -174,13 +174,13 @@ ${storyContent}`
         type: 'ai' as const,
         content: `I'll help you improve the entire user story based on your feedback. Here's a revised version that addresses your concerns:
 
-**Enhanced User Story:**
+Enhanced User Story:
 
-**Title:** Advanced User Management Platform with Security Controls
+Title: Advanced User Management Platform with Security Controls
 
-**Description:** As a product owner, I want a comprehensive user management platform with advanced security features, including multi-factor authentication, granular role-based permissions, real-time monitoring, and automated compliance reporting so that I can ensure secure and efficient access management while meeting regulatory requirements.
+Description: As a product owner, I want a comprehensive user management platform with advanced security features, including multi-factor authentication, granular role-based permissions, real-time monitoring, and automated compliance reporting so that I can ensure secure and efficient access management while meeting regulatory requirements.
 
-**Acceptance Criteria:** 
+Acceptance Criteria: 
 • System enforces multi-factor authentication for all administrative functions
 • Users can be assigned granular roles with customizable permission sets
 • Real-time dashboard shows active sessions and security events
@@ -189,7 +189,7 @@ ${storyContent}`
 • Session timeout and concurrent login limits are configurable
 • All user actions are logged with detailed metadata for forensic analysis
 
-**Story Point Estimate:** 13
+Story Point Estimate: 13
 
 This revision enhances security features, adds compliance aspects, and provides more detailed acceptance criteria.`,
         hasActions: true,
