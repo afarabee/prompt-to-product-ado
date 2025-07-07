@@ -45,7 +45,7 @@ export const SuggestionMessage: React.FC<SuggestionMessageProps> = ({
       {showDiff && (
         <DiffView
           originalContent={currentValue}
-          newContent={content}
+          newContent={content.split('\n\n').slice(1).join('\n\n') || content}
           fieldName={affectedField}
         />
       )}

@@ -121,6 +121,19 @@ What would you like to work on first?`,
       return;
     }
 
+    if (action === 'edit') {
+      // Extract clean content and trigger edit mode
+      const cleanContent = message.content.split('\n\n')[1]?.replace(/"/g, '') || message.content;
+      const editEvent = new CustomEvent('editFieldContent', {
+        detail: {
+          fieldName: message.suggestion?.affectedField.toLowerCase(),
+          suggestedContent: cleanContent
+        }
+      });
+      window.dispatchEvent(editEvent);
+      return;
+    }
+
     if (!message.suggestion) return;
 
     setActionLoading(true);
@@ -290,7 +303,7 @@ What would you like to work on first?`,
               onKeyPress={handleKeyPress}
               placeholder="Ask about the story, suggest improvements, or request specific changes..."
               className="flex-1 p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={2}
+              rows={3}
             />
             <button
               onClick={handleSend}
@@ -381,7 +394,7 @@ What would you like to work on first?`,
               onKeyPress={handleKeyPress}
               placeholder="Ask about the story..."
               className="flex-1 p-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={2}
+              rows={3}
             />
             <button
               onClick={handleSend}
