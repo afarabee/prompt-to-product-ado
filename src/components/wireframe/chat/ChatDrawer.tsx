@@ -69,14 +69,14 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen: externalIsOpen, 
       setStoryContext({ title, description, acceptanceCriteria, storyPointEstimate });
       setIsOpen(true);
       
-      // Create story review starter message
-      const storyContent = `**Title:** ${title || '(Empty)'}
+      // Create story review starter message with empty fields
+      const storyContent = `Title: ${title || '(Empty)'}
 
-**Description:** ${description || '(Empty)'}
+Description: ${description || '(Empty)'}
 
-**Acceptance Criteria:** ${acceptanceCriteria || '(Empty)'}
+Acceptance Criteria: ${acceptanceCriteria || '(Empty)'}
 
-**Story Point Estimate:** ${storyPointEstimate || '(Empty)'}`;
+Story Point Estimate: ${storyPointEstimate || '(Empty)'}`;
       
       const storyMessages = [
         {
@@ -84,35 +84,6 @@ export const ChatDrawer: React.FC<ChatDrawerProps> = ({ isOpen: externalIsOpen, 
           content: `Here's your current story draft. What would you like to refine or update?
 
 ${storyContent}`
-        },
-        {
-          type: 'user' as const,
-          content: 'Can you improve this story to focus more on user security and make it more detailed?'
-        },
-        {
-          type: 'ai' as const,
-          content: `I'll help you enhance this story with better security focus and more detail. Here's my suggested revision:
-
-**Enhanced User Story:**
-
-**Title:** Secure User Management System with Multi-Factor Authentication
-
-**Description:** As a product owner, I want a comprehensive user management system with robust security controls, including multi-factor authentication, role-based permissions, session management, and detailed audit logging so that I can ensure secure access management across the platform while maintaining compliance with security standards.
-
-**Acceptance Criteria:** 
-• User can assign and modify roles for team members with approval workflow
-• System enforces multi-factor authentication for all admin actions
-• Interface displays real-time security status and user session information
-• Admin can export detailed user access reports with audit trail in CSV/PDF format
-• All user management actions are logged with timestamps and IP addresses
-• Password policies are enforced with complexity requirements
-• Inactive sessions are automatically terminated after configurable timeout
-
-**Story Point Estimate:** 8
-
-This revision adds specific security features, clearer user outcomes, and more detailed acceptance criteria.`,
-          hasActions: true,
-          isStoryReplace: true
         }
       ];
       
