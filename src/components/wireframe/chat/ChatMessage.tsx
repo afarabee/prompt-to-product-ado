@@ -183,7 +183,16 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
             )}
           </div>
         ) : (
-          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+          <div>
+            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+            
+            {/* Confirmation Message for story replacement */}
+            {confirmationMessage && message.isStoryReplace && (
+              <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded text-sm text-green-800">
+                ✅ {confirmationMessage}
+              </div>
+            )}
+          </div>
         )}
         
         {message.hasActions && message.type === 'ai' && !isEditing && (
