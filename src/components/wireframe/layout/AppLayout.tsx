@@ -99,12 +99,12 @@ export const AppLayout = () => {
         storyPointEstimate: fieldValues.storyPointEstimate
       };
       
-      // Parse the AI story content and extract fields
+      // Parse the AI story content and extract fields (handle both with and without asterisks)
       const parseStoryContent = (content: string) => {
-        const titleMatch = content.match(/\*\*Title:\*\*\s*(.+?)(?=\n|\*\*|$)/);
-        const descriptionMatch = content.match(/\*\*Description:\*\*\s*([\s\S]*?)(?=\n\*\*|$)/);
-        const criteriaMatch = content.match(/\*\*Acceptance Criteria:\*\*\s*([\s\S]*?)(?=\n\*\*|$)/);
-        const estimateMatch = content.match(/\*\*Story Point Estimate:\*\*\s*(.+?)(?=\n|\*\*|$)/);
+        const titleMatch = content.match(/(?:\*\*)?Title:?\*?\*?\s*(.+?)(?=\n|Description:|Acceptance|Story Point|\*\*|$)/);
+        const descriptionMatch = content.match(/(?:\*\*)?Description:?\*?\*?\s*([\s\S]*?)(?=\n(?:\*\*)?Acceptance|Story Point|\*\*|$)/);
+        const criteriaMatch = content.match(/(?:\*\*)?Acceptance Criteria:?\*?\*?\s*([\s\S]*?)(?=\n(?:\*\*)?Story Point|\*\*|$)/);
+        const estimateMatch = content.match(/(?:\*\*)?Story Point Estimate:?\*?\*?\s*(.+?)(?=\n|\*\*|$)/);
         
         return {
           title: titleMatch?.[1]?.trim() || '',
