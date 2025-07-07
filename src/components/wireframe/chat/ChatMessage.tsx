@@ -48,10 +48,20 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
   };
 
   const handleReplaceStoryClick = () => {
+    // Extract just the story content without AI explanation text
+    let cleanContent = message.content;
+    
+    // Remove AI explanation text before the actual story content
+    const storyStartPattern = /(?:Enhanced User Story:|Title:|\*\*Title:\*\*)/;
+    const match = cleanContent.match(storyStartPattern);
+    if (match) {
+      cleanContent = cleanContent.substring(cleanContent.indexOf(match[0]));
+    }
+    
     // Trigger enhanced warning dialog in ChatDrawer
     const event = new CustomEvent('showReplaceWarning', { 
       detail: { 
-        content: message.content,
+        content: cleanContent,
         suggestedContent: message.suggestedContent 
       } 
     });
