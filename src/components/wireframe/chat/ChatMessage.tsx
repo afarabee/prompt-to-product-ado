@@ -27,7 +27,18 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ message, onAccept, onR
   const [showFieldReplaceWarning, setShowFieldReplaceWarning] = useState(false);
 
   const handleEditClick = () => {
-    setEditedContent(localEditedSuggestion || message.suggestedContent || message.content || '');
+    let contentToEdit = localEditedSuggestion || message.suggestedContent || message.content || '';
+    
+    // For story replacement, clean out AI explanation text
+    if (message.isStoryReplace) {
+      const storyStartPattern = /(?:Enhanced User Story:|Title:|\*\*Title:\*\*)/;
+      const match = contentToEdit.match(storyStartPattern);
+      if (match) {
+        contentToEdit = contentToEdit.substring(contentToEdit.indexOf(match[0]));
+      }
+    }
+    
+    setEditedContent(contentToEdit);
     setIsEditing(true);
   };
 
