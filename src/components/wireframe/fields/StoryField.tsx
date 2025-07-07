@@ -11,6 +11,7 @@ interface StoryFieldProps {
   inputType?: 'text' | 'textarea';
   rows?: number;
   helperText?: string;
+  isHighlighted?: boolean;
   onChange: (value: string) => void;
 }
 
@@ -22,6 +23,7 @@ export const StoryField: React.FC<StoryFieldProps> = ({
   inputType = 'text',
   rows = 4,
   helperText = '',
+  isHighlighted = false,
   onChange
 }) => {
 
@@ -42,7 +44,15 @@ export const StoryField: React.FC<StoryFieldProps> = ({
           )}
         </div>
         
-        <div className="p-3 rounded border-2" style={{ backgroundColor: '#FFFFFF', borderColor: '#808384' }}>
+        <div 
+          className={`p-3 rounded border-2 transition-all duration-300 ${
+            isHighlighted 
+              ? 'ring-2 ring-blue-400 animate-pulse border-blue-400' 
+              : 'border-gray-400'
+          }`} 
+          style={{ backgroundColor: '#FFFFFF' }}
+          title={isHighlighted ? "This section will be updated if you click Apply" : undefined}
+        >
           {inputType === 'textarea' ? (
             <textarea
               className="w-full border-none outline-none resize-y min-h-20"

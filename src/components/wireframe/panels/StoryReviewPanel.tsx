@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, Minus, MessageSquare, Send } from 'lucide-react';
 import { ChatMessage } from '../chat/ChatMessage';
+import { SuggestionMessage } from '../chat/SuggestionMessage';
+import { ConfirmationToast } from '../chat/ConfirmationToast';
 import { cn } from '@/lib/utils';
 
 interface StoryReviewPanelProps {
@@ -22,6 +24,10 @@ interface Message {
   content: string;
   isUser: boolean;
   timestamp: Date;
+  suggestion?: {
+    affectedField: string;
+    currentValue: string;
+  };
 }
 
 export const StoryReviewPanel: React.FC<StoryReviewPanelProps> = ({
@@ -35,6 +41,12 @@ export const StoryReviewPanel: React.FC<StoryReviewPanelProps> = ({
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [showConfirmation, setShowConfirmation] = useState<{
+    fieldName: string;
+    message: string;
+  } | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Add initial AI greeting when panel opens with a story
   useEffect(() => {
@@ -57,6 +69,15 @@ What would you like to work on first?`,
     }
   }, [isOpen, story, messages.length]);
 
+  // Auto-scroll to bottom
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, showConfirmation]);
+
   const handleSend = () => {
     if (!inputValue.trim()) return;
 
@@ -71,13 +92,17 @@ What would you like to work on first?`,
     setInputValue('');
     setIsTyping(true);
 
-    // Simulate AI response
+    // Simulate AI response with suggestion
     setTimeout(() => {
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: `I understand you'd like help with: "${inputValue}"\n\nLet me analyze your current story and provide specific suggestions. Based on what I see, here are some recommendations...`,
+        content: `Based on your request, here's a stronger version of the Description:\n\n"As a product owner, I want role-based user management with mobile-friendly controls and exportable audit logs, so I can securely manage team access across devices."`,
         isUser: false,
-        timestamp: new Date()
+        timestamp: new Date(),
+        suggestion: {
+          affectedField: 'Description',
+          currentValue: story?.description || ''
+        }
       };
       setMessages(prev => [...prev, aiResponse]);
       setIsTyping(false);
@@ -89,6 +114,69 @@ What would you like to work on first?`,
       e.preventDefault();
       handleSend();
     }
+  };
+
+  const handleSuggestionAction = (action: 'replace' | 'edit' | 'cancel', message: Message) => {
+    if (action === 'cancel') {
+      return;
+    }
+
+    if (!message.suggestion) return;
+
+    setActionLoading(true);
+
+    // Highlight the field
+    const highlightEvent = new CustomEvent('highlightField', {
+      detail: { fieldName: message.suggestion.affectedField.toLowerCase() }
+    });
+    window.dispatchEvent(highlightEvent);
+
+    setTimeout(() => {
+      if (action === 'replace') {
+        // Update the field
+        const updateEvent = new CustomEvent('updateFieldFromAI', {
+          detail: {
+            fieldName: message.suggestion.affectedField.toLowerCase(),
+            action: 'replace',
+            suggestedContent: message.content.split('\n\n')[1].replace(/"/g, '')
+          }
+        });
+        window.dispatchEvent(updateEvent);
+
+        // Show confirmation
+        const confirmEvent = new CustomEvent('showConfirmation', {
+          detail: {
+            fieldName: message.suggestion.affectedField,
+            previousValue: message.suggestion.currentValue,
+            newValue: message.content.split('\n\n')[1].replace(/"/g, '')
+          }
+        });
+        window.dispatchEvent(confirmEvent);
+
+        setShowConfirmation({
+          fieldName: message.suggestion.affectedField,
+          message: `Changes successfully applied to ${message.suggestion.affectedField}`
+        });
+
+        // Auto-hide confirmation
+        setTimeout(() => {
+          setShowConfirmation(null);
+        }, 10000);
+      }
+
+      setActionLoading(false);
+    }, 250); // Visual continuity delay
+  };
+
+  const handleUndo = () => {
+    if (!showConfirmation) return;
+
+    const undoEvent = new CustomEvent('triggerUndo', {
+      detail: { fieldName: showConfirmation.fieldName.toLowerCase() }
+    });
+    window.dispatchEvent(undoEvent);
+
+    setShowConfirmation(null);
   };
 
   if (!isOpen) return null;
@@ -149,14 +237,35 @@ What would you like to work on first?`,
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message) => (
-            <ChatMessage
-              key={message.id}
-              message={{
-                type: message.isUser ? 'user' : 'ai',
-                content: message.content
-              }}
-            />
+            <div key={message.id} className="space-y-2">
+              {message.suggestion ? (
+                <SuggestionMessage
+                  content={message.content}
+                  affectedField={message.suggestion.affectedField}
+                  currentValue={message.suggestion.currentValue}
+                  onReplace={() => handleSuggestionAction('replace', message)}
+                  onEdit={() => handleSuggestionAction('edit', message)}
+                  onCancel={() => handleSuggestionAction('cancel', message)}
+                  isLoading={actionLoading}
+                />
+              ) : (
+                <ChatMessage
+                  message={{
+                    type: message.isUser ? 'user' : 'ai',
+                    content: message.content
+                  }}
+                />
+              )}
+            </div>
           ))}
+          
+          {showConfirmation && (
+            <ConfirmationToast
+              fieldName={showConfirmation.fieldName}
+              onUndo={handleUndo}
+              onDismiss={() => setShowConfirmation(null)}
+            />
+          )}
           
           {isTyping && (
             <div className="flex items-center gap-2 text-gray-500">
@@ -168,6 +277,8 @@ What would you like to work on first?`,
               <span className="text-sm">AI is thinking...</span>
             </div>
           )}
+          
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Input */}
@@ -217,14 +328,35 @@ What would you like to work on first?`,
         {/* Messages */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message) => (
-            <ChatMessage
-              key={message.id}
-              message={{
-                type: message.isUser ? 'user' : 'ai',
-                content: message.content
-              }}
-            />
+            <div key={message.id} className="space-y-2">
+              {message.suggestion ? (
+                <SuggestionMessage
+                  content={message.content}
+                  affectedField={message.suggestion.affectedField}
+                  currentValue={message.suggestion.currentValue}
+                  onReplace={() => handleSuggestionAction('replace', message)}
+                  onEdit={() => handleSuggestionAction('edit', message)}
+                  onCancel={() => handleSuggestionAction('cancel', message)}
+                  isLoading={actionLoading}
+                />
+              ) : (
+                <ChatMessage
+                  message={{
+                    type: message.isUser ? 'user' : 'ai',
+                    content: message.content
+                  }}
+                />
+              )}
+            </div>
           ))}
+          
+          {showConfirmation && (
+            <ConfirmationToast
+              fieldName={showConfirmation.fieldName}
+              onUndo={handleUndo}
+              onDismiss={() => setShowConfirmation(null)}
+            />
+          )}
           
           {isTyping && (
             <div className="flex items-center gap-2 text-gray-500">
@@ -236,6 +368,8 @@ What would you like to work on first?`,
               <span className="text-sm">AI is thinking...</span>
             </div>
           )}
+          
+          <div ref={messagesEndRef} />
         </div>
 
         {/* Input */}

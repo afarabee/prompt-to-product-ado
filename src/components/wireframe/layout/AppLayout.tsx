@@ -21,6 +21,19 @@ export const AppLayout = () => {
   const [storyGenerated, setStoryGenerated] = useState(false);
   const [showStoryReviewPanel, setShowStoryReviewPanel] = useState(false);
   const [isStoryReviewMinimized, setIsStoryReviewMinimized] = useState(false);
+  const [highlightedField, setHighlightedField] = useState<string | null>(null);
+  const [undoStack, setUndoStack] = useState<Array<{
+    fieldName: string;
+    previousValue: string;
+    newValue: string;
+    timestamp: number;
+    actionType: string;
+  }>>([]);
+  const [recentConfirmation, setRecentConfirmation] = useState<{
+    fieldName: string;
+    message: string;
+    showUndo: boolean;
+  } | null>(null);
 
   // Field values state
   const [fieldValues, setFieldValues] = useState({
@@ -151,14 +164,83 @@ export const AppLayout = () => {
       console.log('Field value requested for:', fieldName, fieldValues[fieldName as keyof typeof fieldValues]);
     };
 
+    const handleHighlightField = (event: CustomEvent) => {
+      const { fieldName } = event.detail;
+      setHighlightedField(fieldName);
+      
+      // Clear highlight after 3 seconds if no action taken
+      setTimeout(() => {
+        setHighlightedField(null);
+      }, 3000);
+    };
+
+    const handleShowConfirmation = (event: CustomEvent) => {
+      const { fieldName, previousValue, newValue } = event.detail;
+      
+      // Add to undo stack
+      setUndoStack(prev => [...prev.slice(-4), {
+        fieldName,
+        previousValue,
+        newValue,
+        timestamp: Date.now(),
+        actionType: 'ai-suggestion'
+      }]);
+
+      // Show confirmation
+      setRecentConfirmation({
+        fieldName,
+        message: `Changes successfully applied to ${fieldName}`,
+        showUndo: true
+      });
+
+      // Clear highlight
+      setHighlightedField(null);
+
+      // Auto-hide confirmation after 10 seconds
+      setTimeout(() => {
+        setRecentConfirmation(null);
+      }, 10000);
+    };
+
+    const handleUndo = (event: CustomEvent) => {
+      const { fieldName } = event.detail;
+      const lastChange = undoStack.filter(change => change.fieldName === fieldName).pop();
+      
+      if (lastChange) {
+        // Restore previous value
+        setFieldValues(prev => ({
+          ...prev,
+          [fieldName]: lastChange.previousValue
+        }));
+
+        // Remove from undo stack
+        setUndoStack(prev => prev.filter(change => change !== lastChange));
+
+        // Clear confirmation
+        setRecentConfirmation(null);
+
+        // Briefly highlight the field
+        setHighlightedField(fieldName);
+        setTimeout(() => {
+          setHighlightedField(null);
+        }, 1500);
+      }
+    };
+
     window.addEventListener('updateFieldFromAI', handleUpdateFieldFromAI as EventListener);
     window.addEventListener('replaceStoryFromAI', handleReplaceStoryFromAI as EventListener);
     window.addEventListener('getFieldValue', handleGetFieldValue as EventListener);
+    window.addEventListener('highlightField', handleHighlightField as EventListener);
+    window.addEventListener('showConfirmation', handleShowConfirmation as EventListener);
+    window.addEventListener('triggerUndo', handleUndo as EventListener);
     
     return () => {
       window.removeEventListener('updateFieldFromAI', handleUpdateFieldFromAI as EventListener);
       window.removeEventListener('replaceStoryFromAI', handleReplaceStoryFromAI as EventListener);
       window.removeEventListener('getFieldValue', handleGetFieldValue as EventListener);
+      window.removeEventListener('highlightField', handleHighlightField as EventListener);
+      window.removeEventListener('showConfirmation', handleShowConfirmation as EventListener);
+      window.removeEventListener('triggerUndo', handleUndo as EventListener);
     };
   }, [fieldValues]);
 
@@ -190,6 +272,9 @@ export const AppLayout = () => {
       storyPointEstimate: ''
     });
     setStoryGenerated(false);
+    setHighlightedField(null);
+    setUndoStack([]);
+    setRecentConfirmation(null);
   };
 
   const handleFieldChange = (fieldName: keyof typeof fieldValues, value: string) => {
