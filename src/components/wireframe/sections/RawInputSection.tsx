@@ -62,14 +62,21 @@ export const RawInputSection: React.FC<RawInputSectionProps> = ({
       <div className="p-4 rounded-lg border-2 bg-gray-50" style={{ borderColor: '#808384' }}>
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold" style={{ color: '#002153' }}>Raw Input Section</h2>
-          <button
-            onClick={handleToggleCollapse}
-            className="p-2 rounded hover:bg-gray-100 flex items-center gap-2"
-            style={{ color: '#005AA7' }}
-          >
-            <ChevronRight className="w-4 h-4" />
-            <span className="text-sm">Expand</span>
-          </button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleToggleCollapse}
+                className="p-2 rounded hover:bg-gray-100 flex items-center gap-2"
+                style={{ color: '#005AA7' }}
+              >
+                <ChevronRight className="w-4 h-4" />
+                <span className="text-sm">Expand</span>
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Edit your input or start a new story</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
     );

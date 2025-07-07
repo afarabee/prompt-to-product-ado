@@ -9,6 +9,7 @@ import { GeneralChatDrawer } from '../chat/GeneralChatDrawer';
 import { VersionHistorySidebar } from '../sidebars/VersionHistorySidebar';
 import { UserManagementModal } from '../modals/UserManagementModal';
 import { DependencyNotification } from '../fields/DependencyNotification';
+import { StoryReviewPanel } from '../panels/StoryReviewPanel';
 
 export const AppLayout = () => {
   const [isInputCollapsed, setIsInputCollapsed] = useState(false);
@@ -18,6 +19,8 @@ export const AppLayout = () => {
   const [showGeneralAIChat, setShowGeneralAIChat] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [storyGenerated, setStoryGenerated] = useState(false);
+  const [showStoryReviewPanel, setShowStoryReviewPanel] = useState(false);
+  const [isStoryReviewMinimized, setIsStoryReviewMinimized] = useState(false);
 
   // Field values state
   const [fieldValues, setFieldValues] = useState({
@@ -219,10 +222,19 @@ export const AppLayout = () => {
       storyPointEstimate: "5"
     }));
     setStoryGenerated(true);
+    
+    // Auto-collapse input and show Story Review Panel
+    setIsInputCollapsed(true);
+    setShowStoryReviewPanel(true);
+    setIsStoryReviewMinimized(false);
   };
 
   const handleStartOver = () => {
     clearAllFields();
+    // Reset layout to 2-column and close panels
+    setIsInputCollapsed(false);
+    setShowStoryReviewPanel(false);
+    setIsStoryReviewMinimized(false);
   };
 
   const handlePreviewModeToggle = () => {
@@ -259,9 +271,13 @@ export const AppLayout = () => {
           }}
         />
         
-        <main className="flex-1 overflow-auto">
+        <main className={`flex-1 overflow-auto transition-all duration-300 ${showStoryReviewPanel && !isStoryReviewMinimized ? 'lg:mr-96' : showStoryReviewPanel && isStoryReviewMinimized ? 'lg:mr-12' : ''}`}>
           <div className="p-6">
-            <div className={`grid gap-6 ${isInputCollapsed ? 'grid-cols-1' : 'lg:grid-cols-2'}`}>
+            <div className={`grid gap-6 transition-all duration-300 ${
+              showStoryReviewPanel ? 
+                (isInputCollapsed ? 'grid-cols-1' : 'lg:grid-cols-2') : 
+                (isInputCollapsed ? 'grid-cols-1' : 'lg:grid-cols-2')
+            }`}>
               <RawInputSection 
                 isCollapsed={isInputCollapsed}
                 onToggleCollapse={setIsInputCollapsed}
@@ -284,6 +300,7 @@ export const AppLayout = () => {
                 onDescriptionChange={(value) => handleFieldChange('description', value)}
                 onAcceptanceCriteriaChange={(value) => handleFieldChange('acceptanceCriteria', value)}
                 onStoryPointEstimateChange={(value) => handleFieldChange('storyPointEstimate', value)}
+                onStartOver={handleStartOver}
               />
               {dependencies?.show && (
                 <DependencyNotification
@@ -316,6 +333,20 @@ export const AppLayout = () => {
       <UserManagementModal
         isOpen={showUserManagement}
         onClose={() => setShowUserManagement(false)}
+      />
+      
+      <StoryReviewPanel
+        isOpen={showStoryReviewPanel}
+        isMinimized={isStoryReviewMinimized}
+        onClose={() => setShowStoryReviewPanel(false)}
+        onMinimize={() => setIsStoryReviewMinimized(true)}
+        onMaximize={() => setIsStoryReviewMinimized(false)}
+        story={storyGenerated ? {
+          title: fieldValues.title,
+          description: fieldValues.description,
+          acceptanceCriteria: fieldValues.acceptanceCriteria,
+          storyPointEstimate: fieldValues.storyPointEstimate
+        } : undefined}
       />
     </div>
   );

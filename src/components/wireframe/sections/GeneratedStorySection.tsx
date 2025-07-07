@@ -2,7 +2,7 @@
 import React from 'react';
 import { StoryField } from '../fields/StoryField';
 import { ADOIntegrationSection } from './ADOIntegrationSection';
-import { Copy, MessageSquare } from 'lucide-react';
+import { Copy, RotateCcw } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface GeneratedStorySectionProps {
@@ -16,6 +16,7 @@ interface GeneratedStorySectionProps {
   onDescriptionChange: (value: string) => void;
   onAcceptanceCriteriaChange: (value: string) => void;
   onStoryPointEstimateChange: (value: string) => void;
+  onStartOver?: () => void;
 }
 
 export const GeneratedStorySection: React.FC<GeneratedStorySectionProps> = ({ 
@@ -28,19 +29,9 @@ export const GeneratedStorySection: React.FC<GeneratedStorySectionProps> = ({
   onTitleChange,
   onDescriptionChange,
   onAcceptanceCriteriaChange,
-  onStoryPointEstimateChange
+  onStoryPointEstimateChange,
+  onStartOver
 }) => {
-  const handleStoryReviewClick = () => {
-    const event = new CustomEvent('openStoryReviewChat', { 
-      detail: { 
-        title,
-        description,
-        acceptanceCriteria,
-        storyPointEstimate
-      } 
-    });
-    window.dispatchEvent(event);
-  };
   return (
     <TooltipProvider>
       <div className="space-y-6">
@@ -48,21 +39,23 @@ export const GeneratedStorySection: React.FC<GeneratedStorySectionProps> = ({
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold" style={{ color: '#002153' }}>Generated User Story</h2>
             <div className="flex items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button 
-                    onClick={handleStoryReviewClick}
-                    className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100" 
-                    style={{ color: '#005AA7' }}
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    <span className="text-sm font-medium">Review Story with AI</span>
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Open AI chat to revise or discuss the entire generated user story.</p>
-                </TooltipContent>
-              </Tooltip>
+              {storyGenerated && onStartOver && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button 
+                      onClick={onStartOver}
+                      className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100" 
+                      style={{ color: '#005AA7' }}
+                    >
+                      <RotateCcw className="w-4 h-4" />
+                      <span className="text-sm font-medium">Start Over</span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Clear everything and begin a new story</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
               <button 
                 className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100" 
                 style={{ color: '#005AA7' }}

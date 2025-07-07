@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MessageSquare, HelpCircle } from 'lucide-react';
+import { HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface StoryFieldProps {
@@ -24,50 +24,22 @@ export const StoryField: React.FC<StoryFieldProps> = ({
   helperText = '',
   onChange
 }) => {
-  const getTooltipText = () => {
-    switch (fieldName) {
-      case 'description':
-        return "Ask AI to generate or improve the story description based on your product context.";
-      case 'acceptanceCriteria':
-        return "Use AI to suggest testable criteria based on the story description.";
-      case 'storyPointEstimate':
-        return "AI will suggest a value, but you can override it. This value is not required.";
-      default:
-        return `Chat with AI about ${label}`;
-    }
-  };
-
-  const openFieldChat = () => {
-    console.log(`Opening chat for ${fieldName}`);
-    const event = new CustomEvent('openFieldChat', { detail: { fieldName, label } });
-    window.dispatchEvent(event);
-  };
 
   return (
     <TooltipProvider>
       <div>
-        <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium" style={{ color: '#333333' }}>{label}</label>
-            {helperText && (
-              <Tooltip>
-                <TooltipTrigger>
-                  <HelpCircle className="w-4 h-4 text-gray-400" />
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="max-w-xs">{helperText}</p>
-                </TooltipContent>
-              </Tooltip>
-            )}
-            <button 
-              onClick={openFieldChat}
-              className="p-1 rounded hover:bg-blue-50" 
-              title={getTooltipText()}
-              style={{ color: '#005AA7' }}
-            >
-              <MessageSquare className="w-4 h-4" />
-            </button>
-          </div>
+        <div className="flex items-center gap-2 mb-2">
+          <label className="text-sm font-medium" style={{ color: '#333333' }}>{label}</label>
+          {helperText && (
+            <Tooltip>
+              <TooltipTrigger>
+                <HelpCircle className="w-4 h-4 text-gray-400" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-xs">{helperText}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
         </div>
         
         <div className="p-3 rounded border-2" style={{ backgroundColor: '#FFFFFF', borderColor: '#808384' }}>
