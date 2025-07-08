@@ -196,20 +196,19 @@ What would you like to work on first?`,
   };
 
   const handleSuggestionAction = (action: 'replace' | 'edit' | 'cancel', message: Message) => {
-    // Convert suggestion message to regular message (remove action buttons and update content)
-    setMessages(prev => prev.map(msg => 
-      msg.id === message.id 
-        ? { 
-            ...msg, 
-            suggestion: undefined, 
-            messageType: 'regular',
-            content: `Updated ${message.suggestion?.affectedField?.toLowerCase()}: ${message.content.split('\n\n')[1]?.replace(/"/g, '') || message.content}`
-          }
-        : msg
-    ));
-
     if (action === 'cancel') {
-      // Add cancellation confirmation
+      // Convert to regular message and add cancellation confirmation
+      setMessages(prev => prev.map(msg => 
+        msg.id === message.id 
+          ? { 
+              ...msg, 
+              suggestion: undefined, 
+              messageType: 'regular',
+              content: `Updated ${message.suggestion?.affectedField?.toLowerCase()}: ${message.content.split('\n\n')[1]?.replace(/"/g, '') || message.content}`
+            }
+          : msg
+      ));
+
       const confirmationId = `cancel-${Date.now()}`;
       setConfirmations(prev => [...prev, {
         id: confirmationId,
@@ -228,7 +227,7 @@ What would you like to work on first?`,
     }
 
     if (action === 'edit') {
-      // Switch to editing mode
+      // Switch to editing mode (don't convert to regular message yet)
       setEditingMessageId(message.id);
       setMessages(prev => prev.map(msg => 
         msg.id === message.id 
@@ -241,6 +240,18 @@ What would you like to work on first?`,
       ));
       return;
     }
+
+    // Convert suggestion message to regular message (remove action buttons and update content)
+    setMessages(prev => prev.map(msg => 
+      msg.id === message.id 
+        ? { 
+            ...msg, 
+            suggestion: undefined, 
+            messageType: 'regular',
+            content: `Updated ${message.suggestion?.affectedField?.toLowerCase()}: ${message.content.split('\n\n')[1]?.replace(/"/g, '') || message.content}`
+          }
+        : msg
+    ));
 
     if (!message.suggestion) return;
 
@@ -317,22 +328,26 @@ What would you like to work on first?`,
       });
       window.dispatchEvent(updateEvent);
 
-      // Add confirmation message
-      const confirmationMessage: Message = {
-        id: `confirm-${Date.now()}`,
-        content: '',
-        isUser: false,
-        timestamp: new Date(),
-        messageType: 'confirmation'
-      };
-      setMessages(prev => [...prev, confirmationMessage]);
+      // Convert to regular message and add confirmation
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId 
+          ? { 
+              ...msg, 
+              isEditing: false, 
+              editContent: undefined,
+              suggestion: undefined, 
+              messageType: 'regular',
+              content: `Updated ${message.suggestion.affectedField.toLowerCase()}: ${editedContent}`
+            }
+          : msg
+      ));
 
       // Add to confirmations with auto-dismiss
       const confirmationId = `confirm-${Date.now()}`;
       setConfirmations(prev => [...prev, {
         id: confirmationId,
         fieldName: message.suggestion.affectedField,
-        message: `Edited ${message.suggestion.affectedField} saved successfully.`,
+        message: `${message.suggestion.affectedField} has been replaced successfully.`,
         timestamp: new Date(),
         actionType: 'edit'
       }]);
@@ -344,13 +359,6 @@ What would you like to work on first?`,
 
       // Exit editing mode
       setEditingMessageId(null);
-      setMessages(prev => prev.map(msg => 
-        msg.id === messageId 
-          ? { ...msg, isEditing: false, editContent: undefined }
-          : msg
-      ));
-
-      setActionLoading(false);
     }, 250);
   };
 
