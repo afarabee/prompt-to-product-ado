@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, User, Brain, Link, Upload, Download, Trash2, FileText, Image, File } from 'lucide-react';
+import { Settings, Upload, Download, Trash2, FileText, Image, File, ChevronDown, ChevronRight, Eye, ExternalLink, Edit } from 'lucide-react';
 import { 
   Dialog, 
   DialogContent, 
@@ -8,11 +8,10 @@ import {
   DialogFooter 
 } from '@/components/ui/dialog';
 import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from '@/components/ui/tabs';
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger
+} from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -28,13 +27,16 @@ interface ProjectConfigModalProps {
 interface ProjectConfig {
   projectName: string;
   projectDescription: string;
-  aiStyle: string;
-  proactiveSuggestions: boolean;
-  autoHighlight: boolean;
-  advancedRecommendations: boolean;
-  aiInteractionPreferences: string;
-  adoUrl: string;
-  githubUrl: string;
+  customInstructions: string;
+  preferences: string;
+  aiCommunicationStyle: string;
+  enableProactiveSuggestions: boolean;
+  autoHighlightChanges: boolean;
+  enableAdvancedTechRecos: boolean;
+  freeformAiPrefs: string;
+  adoProject: string;
+  githubRepo: string;
+  lastUpdated: string;
 }
 
 export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, onClose }) => {
@@ -46,19 +48,28 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
     return saved ? JSON.parse(saved) : {
       projectName: 'My Product Project',
       projectDescription: '',
-      aiStyle: 'balanced',
-      proactiveSuggestions: true,
-      autoHighlight: true,
-      advancedRecommendations: false,
-      aiInteractionPreferences: '',
-      adoUrl: '',
-      githubUrl: '',
+      customInstructions: '',
+      preferences: '',
+      aiCommunicationStyle: 'collaborative',
+      enableProactiveSuggestions: true,
+      autoHighlightChanges: true,
+      enableAdvancedTechRecos: false,
+      freeformAiPrefs: '',
+      adoProject: '',
+      githubRepo: '',
+      lastUpdated: '',
     };
   });
 
-  const [activeTab, setActiveTab] = useState('context');
   const [isDragging, setIsDragging] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [sectionsOpen, setSectionsOpen] = useState({
+    projectContext: true,
+    aiBehavior: true,
+    integrations: true,
+    supportingFiles: true,
+    systemMetadata: true
+  });
 
   const updateConfig = (updates: Partial<ProjectConfig>) => {
     setConfig(prev => ({ ...prev, ...updates }));
@@ -66,18 +77,23 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
   };
 
   const handleSave = () => {
-    localStorage.setItem('project-config', JSON.stringify(config));
+    const updatedConfig = {
+      ...config,
+      lastUpdated: new Date().toISOString()
+    };
+    localStorage.setItem('project-config', JSON.stringify(updatedConfig));
+    setConfig(updatedConfig);
     setHasUnsavedChanges(false);
     toast({
-      title: "Configuration saved",
+      title: "✅ Configuration saved successfully",
       description: "Your project settings have been updated successfully.",
     });
-    onClose();
+    // Do not close modal after save
   };
 
-  const handleClose = () => {
+  const handleExit = () => {
     if (hasUnsavedChanges) {
-      if (window.confirm('You have unsaved changes. Are you sure you want to close?')) {
+      if (window.confirm('You have unsaved changes. Are you sure you want to exit?')) {
         onClose();
       }
     } else {
@@ -140,26 +156,28 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
     }
   };
 
+  const toggleSection = (section: keyof typeof sectionsOpen) => {
+    setSectionsOpen(prev => ({ ...prev, [section]: !prev[section] }));
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={handleExit}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
-            Project Configuration
+            Project Configuration Panel
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="context">Project Context</TabsTrigger>
-            <TabsTrigger value="ai-behavior">AI Behavior</TabsTrigger>
-            <TabsTrigger value="integrations">Integrations</TabsTrigger>
-            <TabsTrigger value="files">Supporting Files</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="context" className="space-y-6 mt-6">
-            <div className="space-y-4">
+        <div className="space-y-6 mt-6">
+          {/* Section 1: Project Context */}
+          <Collapsible open={sectionsOpen.projectContext} onOpenChange={() => toggleSection('projectContext')}>
+            <CollapsibleTrigger className="flex items-center gap-2 w-full text-left p-2 hover:bg-muted rounded-md">
+              {sectionsOpen.projectContext ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              <h3 className="text-lg font-semibold">1. Project Context</h3>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-4 p-4 border-l-2 border-muted ml-3">
               <div>
                 <Label htmlFor="project-name">Project Name</Label>
                 <Input
@@ -177,27 +195,63 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
                   onChange={(e) => updateConfig({ projectDescription: e.target.value })}
                   placeholder="Describe your project, target users, and key goals..."
                   rows={4}
+                  className="resize-y"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
                   This context helps AI provide more relevant suggestions across all workspaces.
                 </p>
               </div>
-            </div>
-          </TabsContent>
+            </CollapsibleContent>
+          </Collapsible>
 
-          <TabsContent value="ai-behavior" className="space-y-6 mt-6">
-            <div className="space-y-4">
+          {/* Section 2: AI Behavior Preferences */}
+          <Collapsible open={sectionsOpen.aiBehavior} onOpenChange={() => toggleSection('aiBehavior')}>
+            <CollapsibleTrigger className="flex items-center gap-2 w-full text-left p-2 hover:bg-muted rounded-md">
+              {sectionsOpen.aiBehavior ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              <h3 className="text-lg font-semibold">2. AI Behavior Preferences</h3>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-4 p-4 border-l-2 border-muted ml-3">
               <div>
-                <Label htmlFor="ai-style">AI Communication Style</Label>
+                <Label htmlFor="custom-instructions">Custom Instructions</Label>
+                <Textarea
+                  id="custom-instructions"
+                  value={config.customInstructions}
+                  onChange={(e) => updateConfig({ customInstructions: e.target.value })}
+                  placeholder="Use active voice, avoid technical jargon, highlight user benefit..."
+                  rows={3}
+                  className="resize-y"
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Set rules or tone guidelines for how the AI should generate responses in this workspace.
+                </p>
+              </div>
+              
+              <div>
+                <Label htmlFor="preferences">Preferences</Label>
+                <Textarea
+                  id="preferences"
+                  value={config.preferences}
+                  onChange={(e) => updateConfig({ preferences: e.target.value })}
+                  placeholder="Set your team's default story format, estimation type, and tagging conventions..."
+                  rows={3}
+                  className="resize-y"
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Set your team's default story format, estimation type, and tagging conventions.
+                </p>
+              </div>
+
+              <div>
+                <Label htmlFor="ai-communication-style">AI Communication Style</Label>
                 <select
-                  id="ai-style"
-                  value={config.aiStyle}
-                  onChange={(e) => updateConfig({ aiStyle: e.target.value })}
+                  id="ai-communication-style"
+                  value={config.aiCommunicationStyle}
+                  onChange={(e) => updateConfig({ aiCommunicationStyle: e.target.value })}
                   className="w-full p-2 border border-input rounded-md bg-background"
                 >
-                  <option value="concise">Concise - Brief, to-the-point responses</option>
-                  <option value="balanced">Balanced - Moderate detail with explanations</option>
-                  <option value="detailed">Detailed - Comprehensive responses with examples</option>
+                  <option value="concise">Concise</option>
+                  <option value="collaborative">Collaborative</option>
+                  <option value="creative">Creative</option>
                 </select>
               </div>
 
@@ -205,91 +259,99 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
                 <label className="flex items-center space-x-2">
                   <input
                     type="checkbox"
-                    checked={config.proactiveSuggestions}
-                    onChange={(e) => updateConfig({ proactiveSuggestions: e.target.checked })}
+                    checked={config.enableProactiveSuggestions}
+                    onChange={(e) => updateConfig({ enableProactiveSuggestions: e.target.checked })}
                     className="rounded border-input"
                   />
-                  <span className="text-sm">Enable proactive suggestions</span>
+                  <span className="text-sm">Enable Proactive Suggestions</span>
                 </label>
                 <label className="flex items-center space-x-2">
                   <input
                     type="checkbox"
-                    checked={config.autoHighlight}
-                    onChange={(e) => updateConfig({ autoHighlight: e.target.checked })}
+                    checked={config.autoHighlightChanges}
+                    onChange={(e) => updateConfig({ autoHighlightChanges: e.target.checked })}
                     className="rounded border-input"
                   />
-                  <span className="text-sm">Auto-highlight affected fields</span>
+                  <span className="text-sm">Auto-highlight Affected Fields</span>
                 </label>
                 <label className="flex items-center space-x-2">
                   <input
                     type="checkbox"
-                    checked={config.advancedRecommendations}
-                    onChange={(e) => updateConfig({ advancedRecommendations: e.target.checked })}
+                    checked={config.enableAdvancedTechRecos}
+                    onChange={(e) => updateConfig({ enableAdvancedTechRecos: e.target.checked })}
                     className="rounded border-input"
                   />
-                  <span className="text-sm">Advanced technical recommendations</span>
+                  <span className="text-sm">Advanced Technical Recommendations</span>
                 </label>
               </div>
 
               <div>
-                <Label htmlFor="ai-preferences">AI Interaction Preferences</Label>
+                <Label htmlFor="freeform-ai-prefs">AI Interaction Style (Free-form)</Label>
                 <Textarea
-                  id="ai-preferences"
-                  value={config.aiInteractionPreferences}
-                  onChange={(e) => updateConfig({ aiInteractionPreferences: e.target.value })}
-                  placeholder="Describe how you prefer to interact with AI. (e.g. use simpler language, always show examples, etc.)"
+                  id="freeform-ai-prefs"
+                  value={config.freeformAiPrefs}
+                  onChange={(e) => updateConfig({ freeformAiPrefs: e.target.value })}
+                  placeholder="Optional: How would you like the AI to interact with you?"
                   rows={3}
+                  className="resize-y"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
-                  Customize how the AI communicates with you across all workspaces.
+                  Optional: How would you like the AI to interact with you?
                 </p>
               </div>
-            </div>
-          </TabsContent>
+            </CollapsibleContent>
+          </Collapsible>
 
-          <TabsContent value="integrations" className="space-y-6 mt-6">
-            <div className="space-y-4">
+          {/* Section 3: Integrations */}
+          <Collapsible open={sectionsOpen.integrations} onOpenChange={() => toggleSection('integrations')}>
+            <CollapsibleTrigger className="flex items-center gap-2 w-full text-left p-2 hover:bg-muted rounded-md">
+              {sectionsOpen.integrations ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              <h3 className="text-lg font-semibold">3. Integrations</h3>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-4 p-4 border-l-2 border-muted ml-3">
               <div>
-                <Label htmlFor="ado-url">Azure DevOps Organization URL</Label>
+                <Label htmlFor="ado-project">Azure DevOps Project</Label>
                 <Input
-                  id="ado-url"
-                  type="url"
-                  value={config.adoUrl}
-                  onChange={(e) => updateConfig({ adoUrl: e.target.value })}
-                  placeholder="https://dev.azure.com/yourorg"
+                  id="ado-project"
+                  value={config.adoProject}
+                  onChange={(e) => updateConfig({ adoProject: e.target.value })}
+                  placeholder="Select the active ADO project"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
-                  Connect to ADO for enhanced backlog intelligence and story sync.
+                  Select the active ADO project where stories, features, and test cases will be saved.
                 </p>
               </div>
 
               <div>
-                <Label htmlFor="github-url">GitHub Repository URL</Label>
+                <Label htmlFor="github-repo">GitHub Repository</Label>
                 <Input
-                  id="github-url"
-                  type="url"
-                  value={config.githubUrl}
-                  onChange={(e) => updateConfig({ githubUrl: e.target.value })}
+                  id="github-repo"
+                  value={config.githubRepo}
+                  onChange={(e) => updateConfig({ githubRepo: e.target.value })}
                   placeholder="https://github.com/org/repo"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
-                  Optional: Link a GitHub repo for dual-tracking or richer context.
+                  Connect a GitHub repo using your agent token and path. Used for context and traceability.
                 </p>
               </div>
 
-              <div className="bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  <strong>Note:</strong> Integration settings will be available in the next release. 
-                  Configure these now to be ready for enhanced features.
+              <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  These settings enable enhanced story generation and backlog intelligence.
                 </p>
               </div>
-            </div>
-          </TabsContent>
+            </CollapsibleContent>
+          </Collapsible>
 
-          <TabsContent value="files" className="space-y-6 mt-6">
-            <div className="space-y-4">
+          {/* Section 4: Supporting Files */}
+          <Collapsible open={sectionsOpen.supportingFiles} onOpenChange={() => toggleSection('supportingFiles')}>
+            <CollapsibleTrigger className="flex items-center gap-2 w-full text-left p-2 hover:bg-muted rounded-md">
+              {sectionsOpen.supportingFiles ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              <h3 className="text-lg font-semibold">4. Supporting Files (Custom Knowledgebase)</h3>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-4 p-4 border-l-2 border-muted ml-3">
               <div>
-                <Label>Upload Supporting Files</Label>
+                <Label>Upload Project Files</Label>
                 <div
                   className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
                     isDragging 
@@ -305,7 +367,7 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
                     Drag & drop files here, or click to select
                   </p>
                   <p className="text-xs text-muted-foreground mb-4">
-                    Supported: PDF, PNG, JPG, DOCX, TXT (max 10MB)
+                    Accepted file types: PDF, DOCX, TXT, PNG. Max size: 10MB per file.
                   </p>
                   <input
                     type="file"
@@ -322,7 +384,7 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
                   </Button>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Attach screenshots, mockups, docs, or other references. These may help AI generate more tailored responses.
+                  Upload documentation, style guides, or reference materials to help the AI generate accurate, domain-specific responses. Examples include personas, workflows, technical specifications, story point rubrics, README files, and user research summaries.
                 </p>
               </div>
 
@@ -349,13 +411,31 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
                             variant="ghost"
                             size="sm"
                             onClick={() => downloadFile(file)}
+                            title="View"
                           >
-                            <Download className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => downloadFile(file)}
+                            title="Open"
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {/* TODO: Implement rename */}}
+                            title="Rename"
+                          >
+                            <Edit className="h-4 w-4" />
                           </Button>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDeleteFile(file.id)}
+                            title="Delete"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -365,15 +445,41 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
                   </div>
                 </div>
               )}
-            </div>
-          </TabsContent>
-        </Tabs>
+            </CollapsibleContent>
+          </Collapsible>
+
+          {/* Section 5: System Metadata */}
+          <Collapsible open={sectionsOpen.systemMetadata} onOpenChange={() => toggleSection('systemMetadata')}>
+            <CollapsibleTrigger className="flex items-center gap-2 w-full text-left p-2 hover:bg-muted rounded-md">
+              {sectionsOpen.systemMetadata ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              <h3 className="text-lg font-semibold">5. System Metadata</h3>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-4 p-4 border-l-2 border-muted ml-3">
+              <div>
+                <Label htmlFor="last-updated">Last Updated</Label>
+                <Input
+                  id="last-updated"
+                  value={config.lastUpdated ? new Date(config.lastUpdated).toLocaleString() : 'Never'}
+                  readOnly
+                  className="bg-muted"
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  Shows the last time this configuration was modified and saved.
+                </p>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
 
         <DialogFooter className="mt-6">
-          <Button variant="outline" onClick={handleClose}>
-            Cancel
+          <Button variant="outline" onClick={handleExit}>
+            Exit
           </Button>
-          <Button onClick={handleSave} disabled={!hasUnsavedChanges}>
+          <Button 
+            onClick={handleSave} 
+            disabled={!hasUnsavedChanges}
+            title="Save all configuration changes across this panel."
+          >
             Save Configuration
           </Button>
         </DialogFooter>
