@@ -62,6 +62,8 @@ export const StoryReviewPanel: React.FC<StoryReviewPanelProps> = ({
     timestamp: Date;
   }>>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const mobileScrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Add initial AI greeting when panel opens with a story
   useEffect(() => {
@@ -86,12 +88,12 @@ What would you like to work on first?`,
 
   // Auto-scroll to bottom
   const scrollToBottom = () => {
-    setTimeout(() => {
-      const messagesContainer = messagesEndRef.current?.parentElement;
-      if (messagesContainer) {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-      }
-    }, 100);
+    const container = scrollContainerRef.current || mobileScrollContainerRef.current;
+    if (container) {
+      requestAnimationFrame(() => {
+        container.scrollTop = container.scrollHeight;
+      });
+    }
   };
 
   useEffect(() => {
@@ -101,12 +103,7 @@ What would you like to work on first?`,
   // Ensure scroll after typing stops
   useEffect(() => {
     if (!isTyping) {
-      setTimeout(() => {
-        const messagesContainer = messagesEndRef.current?.parentElement;
-        if (messagesContainer) {
-          messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }
-      }, 200);
+      scrollToBottom();
     }
   }, [isTyping]);
 
@@ -370,7 +367,7 @@ What would you like to work on first?`,
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message) => (
             <div key={message.id} className="space-y-2">
               {message.messageType === 'cancellation' ? (
@@ -512,7 +509,7 @@ What would you like to work on first?`,
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div ref={mobileScrollContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message) => (
             <div key={message.id} className="space-y-2">
               {message.messageType === 'cancellation' ? (
