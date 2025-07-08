@@ -88,12 +88,21 @@ What would you like to work on first?`,
   const scrollToBottom = () => {
     setTimeout(() => {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 100);
+    }, 200);
   };
 
   useEffect(() => {
     scrollToBottom();
   }, [messages, confirmations, isTyping]);
+
+  // Additional effect to ensure scroll after AI responses
+  useEffect(() => {
+    if (!isTyping && messages.length > 0) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 300);
+    }
+  }, [isTyping, messages.length]);
 
   const handleSend = () => {
     if (!inputValue.trim()) return;
