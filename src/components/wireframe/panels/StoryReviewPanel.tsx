@@ -87,6 +87,21 @@ What would you like to work on first?`,
     }
   }, [isOpen, story, messages.length]);
 
+  // Handle Start Over event from AppLayout
+  useEffect(() => {
+    const handleStartOver = () => {
+      setMessages([]);
+      setConfirmations([]);
+      setEditingMessageId(null);
+      setInputValue('');
+      setIsTyping(false);
+      setActionLoading(false);
+    };
+
+    window.addEventListener('startOverStoryChat', handleStartOver);
+    return () => window.removeEventListener('startOverStoryChat', handleStartOver);
+  }, []);
+
   // Auto-scroll to bottom
   const scrollToBottom = () => {
     const container = scrollContainerRef.current || mobileScrollContainerRef.current;
@@ -255,7 +270,7 @@ What would you like to work on first?`,
         setConfirmations(prev => [...prev, {
           id: confirmationId,
           fieldName: message.suggestion.affectedField,
-          message: `${message.suggestion.affectedField} has been updated.`,
+          message: `${message.suggestion.affectedField} has been successfully replaced.`,
           timestamp: new Date(),
           actionType: 'replace'
         }]);

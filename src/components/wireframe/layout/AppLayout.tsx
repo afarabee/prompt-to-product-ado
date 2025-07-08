@@ -262,6 +262,10 @@ export const AppLayout = () => {
     setIsInputCollapsed(false);
     setShowStoryReviewPanel(false);
     setIsStoryReviewMinimized(false);
+    
+    // Clear story review chat history
+    const startOverEvent = new CustomEvent('startOverStoryChat');
+    window.dispatchEvent(startOverEvent);
   };
 
   const handlePreviewModeToggle = () => {
