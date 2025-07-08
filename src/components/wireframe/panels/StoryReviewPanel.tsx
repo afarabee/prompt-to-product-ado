@@ -346,23 +346,41 @@ What would you like to work on first?`,
 
   if (!isOpen) return null;
 
-  // Minimized state - thin strip
+  // Desktop minimized state - enhanced sticky tab
   if (isMinimized) {
     return (
-      <div className={cn(
-        "fixed right-0 top-0 h-full w-12 bg-white border-l border-gray-200 z-50",
-        "transition-all duration-300 ease-out",
-        "flex flex-col items-center justify-center",
-        "hover:bg-gray-50 cursor-pointer"
-      )}
-      onClick={onMaximize}
-      title="Reopen Story Review Chat"
-      >
-        <MessageSquare className="w-5 h-5 text-blue-600 mb-2" />
-        <div className="text-xs text-gray-500 transform -rotate-90 whitespace-nowrap">
-          Review Chat
+      <>
+        {/* Desktop: Enhanced sticky tab */}
+        <div className={cn(
+          "fixed right-0 top-1/2 -translate-y-1/2 w-16 h-32 z-50",
+          "bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-l-lg shadow-lg",
+          "flex flex-col items-center justify-center gap-2",
+          "hover:from-blue-100 hover:to-blue-150 cursor-pointer transition-all duration-200",
+          "hidden lg:flex"
+        )}
+        onClick={onMaximize}
+        title="Reopen Story Review Chat"
+        >
+          <div className="text-2xl">💬</div>
+          <span className="text-xs font-medium text-blue-700 text-center leading-tight">
+            Review<br/>Chat
+          </span>
         </div>
-      </div>
+
+        {/* Mobile: Floating action button */}
+        <div className={cn(
+          "fixed bottom-20 right-4 w-14 h-14 z-50",
+          "bg-blue-600 rounded-full shadow-lg",
+          "flex items-center justify-center",
+          "hover:bg-blue-700 cursor-pointer transition-colors duration-200",
+          "lg:hidden"
+        )}
+        onClick={onMaximize}
+        title="Reopen Story Review Chat"
+        >
+          <MessageSquare className="w-6 h-6 text-white" />
+        </div>
+      </>
     );
   }
 
@@ -385,16 +403,9 @@ What would you like to work on first?`,
             <button
               onClick={onMinimize}
               className="p-1 rounded hover:bg-gray-100"
-              title="Minimize panel"
+              title="Minimize Story Review Chat"
             >
               <Minus className="w-4 h-4" />
-            </button>
-            <button
-              onClick={onClose}
-              className="p-1 rounded hover:bg-gray-100"
-              title="Close panel"
-            >
-              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -603,11 +614,11 @@ What would you like to work on first?`,
             <p className="text-sm text-gray-600">Ask AI to improve your story</p>
           </div>
           <button
-            onClick={onClose}
+            onClick={onMinimize}
             className="p-1 rounded hover:bg-gray-100"
-            title="Close panel"
+            title="Minimize Story Review Chat"
           >
-            <X className="w-4 h-4" />
+            <Minus className="w-4 h-4" />
           </button>
         </div>
 
