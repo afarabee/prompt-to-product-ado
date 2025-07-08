@@ -139,6 +139,39 @@ What would you like to work on first?`,
     }, 1500);
   };
 
+  const handleTestMultiField = () => {
+    setIsTyping(true);
+
+    setTimeout(() => {
+      const multiFieldResponse: Message = {
+        id: Date.now().toString(),
+        content: "I've analyzed your story and have suggestions for multiple fields to make it more comprehensive:",
+        isUser: false,
+        timestamp: new Date(),
+        messageType: 'multiField',
+        multiFieldSuggestions: [
+          {
+            fieldName: 'Title',
+            currentValue: story?.title || '',
+            suggestedContent: 'Role-Based User Management with Mobile Support'
+          },
+          {
+            fieldName: 'Description', 
+            currentValue: story?.description || '',
+            suggestedContent: 'As a product owner, I want comprehensive role-based user management with mobile-friendly controls and audit logging capabilities, so I can securely manage team access across all devices while maintaining compliance and security standards.'
+          },
+          {
+            fieldName: 'Acceptance Criteria',
+            currentValue: story?.acceptanceCriteria || '',
+            suggestedContent: '• Admin can assign roles (Admin, Manager, User, Viewer) to team members\n• System displays confirmation when user permissions are updated\n• Interface adapts to mobile devices with touch-friendly controls\n• Admin can export user access reports in CSV format\n• All user management actions are logged with timestamp and admin ID\n• Role changes trigger email notifications to affected users\n• System enforces minimum one admin user at all times'
+          }
+        ]
+      };
+      setMessages(prev => [...prev, multiFieldResponse]);
+      setIsTyping(false);
+    }, 2000);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -391,16 +424,77 @@ What would you like to work on first?`,
                   suggestions={message.multiFieldSuggestions}
                   messageId={message.id}
                   onReplace={(fieldName, content) => {
-                    // Handle multi-field replace
-                    console.log('Multi-field replace:', fieldName, content);
+                    setActionLoading(true);
+                    
+                    // Highlight the field
+                    const highlightEvent = new CustomEvent('highlightField', {
+                      detail: { fieldName: fieldName.toLowerCase() }
+                    });
+                    window.dispatchEvent(highlightEvent);
+                    
+                    setTimeout(() => {
+                      // Update the field
+                      const updateEvent = new CustomEvent('updateFieldFromAI', {
+                        detail: {
+                          fieldName: fieldName.toLowerCase(),
+                          action: 'replace',
+                          suggestedContent: content
+                        }
+                      });
+                      window.dispatchEvent(updateEvent);
+                      
+                      // Add confirmation
+                      setConfirmations(prev => [...prev, {
+                        id: `confirm-${Date.now()}-${fieldName}`,
+                        fieldName,
+                        message: `${fieldName} has been updated.`,
+                        timestamp: new Date()
+                      }]);
+                      
+                      setActionLoading(false);
+                    }, 250);
                   }}
                   onEdit={(fieldName, content) => {
-                    // Handle multi-field edit
-                    console.log('Multi-field edit:', fieldName, content);
+                    // For multi-field edit, we'll apply the content directly for now
+                    // In a full implementation, this would open an edit dialog
+                    setActionLoading(true);
+                    
+                    const highlightEvent = new CustomEvent('highlightField', {
+                      detail: { fieldName: fieldName.toLowerCase() }
+                    });
+                    window.dispatchEvent(highlightEvent);
+                    
+                    setTimeout(() => {
+                      const updateEvent = new CustomEvent('updateFieldFromAI', {
+                        detail: {
+                          fieldName: fieldName.toLowerCase(),
+                          action: 'replace',
+                          suggestedContent: content
+                        }
+                      });
+                      window.dispatchEvent(updateEvent);
+                      
+                      setConfirmations(prev => [...prev, {
+                        id: `confirm-${Date.now()}-${fieldName}`,
+                        fieldName,
+                        message: `${fieldName} has been updated (after edit).`,
+                        timestamp: new Date()
+                      }]);
+                      
+                      setActionLoading(false);
+                    }, 250);
                   }}
                   onCancel={(fieldName) => {
-                    // Handle multi-field cancel
-                    console.log('Multi-field cancel:', fieldName);
+                    // Add cancellation message for this specific field
+                    const cancellationMessage: Message = {
+                      id: `cancel-${Date.now()}-${fieldName}`,
+                      content: `Change suggestion for ${fieldName} was canceled.`,
+                      isUser: false,
+                      timestamp: new Date(),
+                      messageType: 'cancellation',
+                      canceled: true
+                    };
+                    setMessages(prev => [...prev, cancellationMessage]);
                   }}
                   isLoading={actionLoading}
                 />
@@ -466,6 +560,15 @@ What would you like to work on first?`,
 
         {/* Input */}
         <div className="p-4 border-t border-gray-200">
+          <div className="flex gap-2 mb-3">
+            <button
+              onClick={handleTestMultiField}
+              className="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
+              title="Test multi-field suggestions"
+            >
+              Test Multi-Field
+            </button>
+          </div>
           <div className="flex gap-2">
             <textarea
               value={inputValue}
@@ -589,6 +692,15 @@ What would you like to work on first?`,
 
         {/* Input */}
         <div className="p-4 border-t border-gray-200">
+          <div className="flex gap-2 mb-3">
+            <button
+              onClick={handleTestMultiField}
+              className="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
+              title="Test multi-field suggestions"
+            >
+              Test Multi-Field
+            </button>
+          </div>
           <div className="flex gap-2">
             <textarea
               value={inputValue}
