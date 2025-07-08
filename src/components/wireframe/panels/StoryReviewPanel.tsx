@@ -86,12 +86,14 @@ What would you like to work on first?`,
 
   // Auto-scroll to bottom
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, confirmations]);
+  }, [messages, confirmations, isTyping]);
 
   const handleSend = () => {
     if (!inputValue.trim()) return;
