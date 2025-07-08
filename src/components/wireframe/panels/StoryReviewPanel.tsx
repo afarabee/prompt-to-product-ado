@@ -196,10 +196,15 @@ What would you like to work on first?`,
   };
 
   const handleSuggestionAction = (action: 'replace' | 'edit' | 'cancel', message: Message) => {
-    // Convert suggestion message to regular message (remove action buttons)
+    // Convert suggestion message to regular message (remove action buttons and update content)
     setMessages(prev => prev.map(msg => 
       msg.id === message.id 
-        ? { ...msg, suggestion: undefined, messageType: 'regular' }
+        ? { 
+            ...msg, 
+            suggestion: undefined, 
+            messageType: 'regular',
+            content: `Updated ${message.suggestion?.affectedField?.toLowerCase()}: ${message.content.split('\n\n')[1]?.replace(/"/g, '') || message.content}`
+          }
         : msg
     ));
 
