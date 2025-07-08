@@ -196,8 +196,12 @@ What would you like to work on first?`,
   };
 
   const handleSuggestionAction = (action: 'replace' | 'edit' | 'cancel', message: Message) => {
-    // Remove the suggestion message immediately
-    setMessages(prev => prev.filter(msg => msg.id !== message.id));
+    // Convert suggestion message to regular message (remove action buttons)
+    setMessages(prev => prev.map(msg => 
+      msg.id === message.id 
+        ? { ...msg, suggestion: undefined, messageType: 'regular' }
+        : msg
+    ));
 
     if (action === 'cancel') {
       // Add cancellation confirmation
