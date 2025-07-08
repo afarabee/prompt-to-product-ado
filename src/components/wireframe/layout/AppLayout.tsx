@@ -8,7 +8,7 @@ import { ChatDrawer } from '../chat/ChatDrawer';
 import { GeneralChatDrawer } from '../chat/GeneralChatDrawer';
 import { VersionHistorySidebar } from '../sidebars/VersionHistorySidebar';
 import { UserManagementModal } from '../modals/UserManagementModal';
-import { ProjectConfigDrawer } from '../../ProjectConfigDrawer';
+import { ProjectConfigModal } from '@/components/ProjectConfigModal';
 
 import { StoryReviewPanel } from '../panels/StoryReviewPanel';
 
@@ -361,7 +361,7 @@ export const AppLayout = () => {
         onClose={() => setShowUserManagement(false)}
       />
       
-      <ProjectConfigDrawer
+      <ProjectConfigModal
         isOpen={showProjectConfig}
         onClose={() => setShowProjectConfig(false)}
       />
