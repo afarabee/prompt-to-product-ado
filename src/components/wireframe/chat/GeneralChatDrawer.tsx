@@ -15,11 +15,30 @@ interface ChatMessage {
 }
 
 export const GeneralChatDrawer: React.FC<GeneralChatDrawerProps> = ({ isOpen, onClose }) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    // Load messages from localStorage on init
+    const saved = localStorage.getItem('general-ai-chat-messages');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      // Convert timestamp strings back to Date objects
+      return parsed.map((msg: any) => ({
+        ...msg,
+        timestamp: new Date(msg.timestamp)
+      }));
+    }
+    return [];
+  });
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+
+  // Save messages to localStorage whenever they change
+  useEffect(() => {
+    if (messages.length > 0) {
+      localStorage.setItem('general-ai-chat-messages', JSON.stringify(messages));
+    }
+  }, [messages]);
 
   // Auto-scroll to bottom when new messages are added
   useEffect(() => {
@@ -77,6 +96,7 @@ export const GeneralChatDrawer: React.FC<GeneralChatDrawerProps> = ({ isOpen, on
 
   const clearConversation = () => {
     setMessages([]);
+    localStorage.removeItem('general-ai-chat-messages');
   };
 
   if (!isOpen) return null;
@@ -104,11 +124,11 @@ export const GeneralChatDrawer: React.FC<GeneralChatDrawerProps> = ({ isOpen, on
             <div className="flex items-center gap-2 ml-4">
               <button
                 onClick={clearConversation}
-                className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-                title="Clear Conversation"
+                className="px-3 py-1 text-sm bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors flex items-center gap-1"
                 disabled={messages.length === 0}
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-3 h-3" />
+                Start Over
               </button>
               <button
                 onClick={onClose}

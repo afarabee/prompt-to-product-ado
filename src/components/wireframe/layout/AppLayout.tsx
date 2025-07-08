@@ -8,6 +8,7 @@ import { ChatDrawer } from '../chat/ChatDrawer';
 import { GeneralChatDrawer } from '../chat/GeneralChatDrawer';
 import { VersionHistorySidebar } from '../sidebars/VersionHistorySidebar';
 import { UserManagementModal } from '../modals/UserManagementModal';
+import { ProjectConfigDrawer } from '../../ProjectConfigDrawer';
 
 import { StoryReviewPanel } from '../panels/StoryReviewPanel';
 
@@ -17,6 +18,7 @@ export const AppLayout = () => {
   const [showUserManagement, setShowUserManagement] = useState(false);
   const [showAIChat, setShowAIChat] = useState(false);
   const [showGeneralAIChat, setShowGeneralAIChat] = useState(false);
+  const [showProjectConfig, setShowProjectConfig] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [storyGenerated, setStoryGenerated] = useState(false);
   const [showStoryReviewPanel, setShowStoryReviewPanel] = useState(false);
@@ -295,12 +297,11 @@ export const AppLayout = () => {
       <div className="flex h-screen">
         <AppSidebar 
           onVersionHistoryClick={() => setShowVersionHistory(true)}
-          onUserManagementClick={() => setShowUserManagement(true)}
           onAIChatClick={() => {
             setShowGeneralAIChat(true);
             setShowAIChat(false); // Close story chat if open
           }}
-          onStoryReviewChatClick={() => setShowStoryReviewPanel(true)}
+          onProjectConfigClick={() => setShowProjectConfig(true)}
           showStoryReviewChat={showStoryReviewPanel}
         />
         
@@ -358,6 +359,11 @@ export const AppLayout = () => {
       <UserManagementModal
         isOpen={showUserManagement}
         onClose={() => setShowUserManagement(false)}
+      />
+      
+      <ProjectConfigDrawer
+        isOpen={showProjectConfig}
+        onClose={() => setShowProjectConfig(false)}
       />
       
       <StoryReviewPanel
