@@ -6,12 +6,16 @@ interface AppSidebarProps {
   onVersionHistoryClick?: () => void;
   onUserManagementClick?: () => void;
   onAIChatClick?: () => void;
+  onStoryReviewChatClick?: () => void;
+  showStoryReviewChat?: boolean;
 }
 
 export const AppSidebar: React.FC<AppSidebarProps> = ({ 
   onVersionHistoryClick, 
   onUserManagementClick,
-  onAIChatClick 
+  onAIChatClick,
+  onStoryReviewChatClick,
+  showStoryReviewChat 
 }) => {
   return (
     <aside className="w-64 border-r-2" style={{ backgroundColor: '#CFD4D7', borderColor: '#808384' }}>
@@ -28,6 +32,19 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             Ask AI!
           </div>
         </button>
+        
+        {!showStoryReviewChat && (
+          <button 
+            className="w-full text-left p-3 rounded-lg hover:bg-gray-200" 
+            style={{ color: '#333333' }}
+            onClick={onStoryReviewChatClick}
+          >
+            <div className="flex items-center gap-2">
+              <MessageSquare className="w-4 h-4" />
+              Story Review Chat
+            </div>
+          </button>
+        )}
         
         <button className="w-full text-left p-3 rounded-lg font-medium" style={{ backgroundColor: '#005AA7', color: 'white' }}>
           <div className="flex items-center gap-2">

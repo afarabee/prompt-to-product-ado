@@ -8,7 +8,7 @@ import { ChatDrawer } from '../chat/ChatDrawer';
 import { GeneralChatDrawer } from '../chat/GeneralChatDrawer';
 import { VersionHistorySidebar } from '../sidebars/VersionHistorySidebar';
 import { UserManagementModal } from '../modals/UserManagementModal';
-import { DependencyNotification } from '../fields/DependencyNotification';
+
 import { StoryReviewPanel } from '../panels/StoryReviewPanel';
 
 export const AppLayout = () => {
@@ -45,12 +45,6 @@ export const AppLayout = () => {
     storyPointEstimate: ''
   });
 
-  // Dependency tracking state
-  const [dependencies, setDependencies] = useState<{
-    sourceField: string;
-    targetField: string;
-    show: boolean;
-  } | null>(null);
 
   // Clear all fields when preview mode toggles
   useEffect(() => {
@@ -80,25 +74,6 @@ export const AppLayout = () => {
             return prev;
         }
         
-        // Trigger dependency notification for Description and Acceptance Criteria
-        if ((fieldName === 'description' || fieldName === 'acceptanceCriteria') && 
-            currentValue !== newValue) {
-          
-          const sourceField = fieldName === 'description' ? 'Description' : 'Acceptance Criteria';
-          const targetField = fieldName === 'description' ? 'Acceptance Criteria' : 'Description';
-          const targetFieldValue = fieldName === 'description' ? prev.acceptanceCriteria : prev.description;
-          
-          // Only show notification if target field has content
-          if (targetFieldValue) {
-            setTimeout(() => {
-              setDependencies({
-                sourceField,
-                targetField,
-                show: true
-              });
-            }, 500);
-          }
-        }
         
         return { ...prev, [fieldName]: newValue };
       });
@@ -244,23 +219,6 @@ export const AppLayout = () => {
     };
   }, [fieldValues]);
 
-  const handleDependencyClick = () => {
-    if (dependencies) {
-      const targetFieldName = dependencies.targetField === 'Description' ? 'description' : 'acceptanceCriteria';
-      const event = new CustomEvent('openFieldChat', { 
-        detail: { 
-          fieldName: targetFieldName, 
-          label: dependencies.targetField 
-        } 
-      });
-      window.dispatchEvent(event);
-      setDependencies(null);
-    }
-  };
-
-  const handleDependencyDismiss = () => {
-    setDependencies(null);
-  };
 
   const clearAllFields = () => {
     setFieldValues({
@@ -278,23 +236,7 @@ export const AppLayout = () => {
   };
 
   const handleFieldChange = (fieldName: keyof typeof fieldValues, value: string) => {
-    const previousValue = fieldValues[fieldName];
     setFieldValues(prev => ({ ...prev, [fieldName]: value }));
-    
-    // Check for field dependencies
-    if (fieldName === 'description' && previousValue !== value && fieldValues.acceptanceCriteria) {
-      setDependencies({
-        sourceField: 'Description',
-        targetField: 'Acceptance Criteria',
-        show: true
-      });
-    } else if (fieldName === 'acceptanceCriteria' && previousValue !== value && fieldValues.description) {
-      setDependencies({
-        sourceField: 'Acceptance Criteria',
-        targetField: 'Description',
-        show: true
-      });
-    }
   };
 
   const handleGenerateStory = () => {
@@ -354,6 +296,8 @@ export const AppLayout = () => {
             setShowGeneralAIChat(true);
             setShowAIChat(false); // Close story chat if open
           }}
+          onStoryReviewChatClick={() => setShowStoryReviewPanel(true)}
+          showStoryReviewChat={showStoryReviewPanel}
         />
         
         <main className={`flex-1 overflow-auto transition-all duration-300 ${showStoryReviewPanel && !isStoryReviewMinimized ? 'lg:mr-96' : showStoryReviewPanel && isStoryReviewMinimized ? 'lg:mr-12' : ''}`}>
@@ -387,14 +331,6 @@ export const AppLayout = () => {
                 onStoryPointEstimateChange={(value) => handleFieldChange('storyPointEstimate', value)}
                 onStartOver={handleStartOver}
               />
-              {dependencies?.show && (
-                <DependencyNotification
-                  sourceField={dependencies.sourceField}
-                  targetField={dependencies.targetField}
-                  onClickField={handleDependencyClick}
-                  onDismiss={handleDependencyDismiss}
-                />
-              )}
             </div>
           </div>
         </main>
