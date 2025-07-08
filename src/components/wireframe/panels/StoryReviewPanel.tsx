@@ -87,22 +87,28 @@ What would you like to work on first?`,
   // Auto-scroll to bottom
   const scrollToBottom = () => {
     setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 200);
+      const messagesContainer = messagesEndRef.current?.parentElement;
+      if (messagesContainer) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
+    }, 100);
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, confirmations, isTyping]);
+  }, [messages, confirmations]);
 
-  // Additional effect to ensure scroll after AI responses
+  // Ensure scroll after typing stops
   useEffect(() => {
-    if (!isTyping && messages.length > 0) {
+    if (!isTyping) {
       setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      }, 300);
+        const messagesContainer = messagesEndRef.current?.parentElement;
+        if (messagesContainer) {
+          messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+      }, 200);
     }
-  }, [isTyping, messages.length]);
+  }, [isTyping]);
 
   const handleSend = () => {
     if (!inputValue.trim()) return;
