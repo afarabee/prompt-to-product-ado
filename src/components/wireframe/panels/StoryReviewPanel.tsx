@@ -270,7 +270,7 @@ What would you like to work on first?`,
         setConfirmations(prev => [...prev, {
           id: confirmationId,
           fieldName: message.suggestion.affectedField,
-          message: `${message.suggestion.affectedField} has been successfully replaced.`,
+          message: `${message.suggestion.affectedField} has been replaced successfully.`,
           timestamp: new Date(),
           actionType: 'replace'
         }]);
