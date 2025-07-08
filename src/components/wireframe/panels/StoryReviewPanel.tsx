@@ -60,6 +60,7 @@ export const StoryReviewPanel: React.FC<StoryReviewPanelProps> = ({
     fieldName: string;
     message: string;
     timestamp: Date;
+    actionType?: 'replace' | 'edit' | 'cancel';
   }>>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -241,18 +242,20 @@ What would you like to work on first?`,
         };
         setMessages(prev => [...prev, confirmationMessage]);
 
-        // Add to confirmations state
+        // Add to confirmations state with auto-dismiss
+        const confirmationId = `confirm-${Date.now()}`;
         setConfirmations(prev => [...prev, {
-          id: `confirm-${Date.now()}`,
+          id: confirmationId,
           fieldName: message.suggestion.affectedField,
           message: `${message.suggestion.affectedField} has been updated.`,
-          timestamp: new Date()
+          timestamp: new Date(),
+          actionType: 'replace'
         }]);
 
-        // Auto-hide confirmation after 10 seconds
+        // Auto-dismiss after 5 seconds
         setTimeout(() => {
-          setConfirmations(prev => prev.slice(1));
-        }, 10000);
+          setConfirmations(prev => prev.filter(c => c.id !== confirmationId));
+        }, 5000);
       }
 
       setActionLoading(false);
@@ -292,13 +295,20 @@ What would you like to work on first?`,
       };
       setMessages(prev => [...prev, confirmationMessage]);
 
-      // Add to confirmations
+      // Add to confirmations with auto-dismiss
+      const confirmationId = `confirm-${Date.now()}`;
       setConfirmations(prev => [...prev, {
-        id: `confirm-${Date.now()}`,
+        id: confirmationId,
         fieldName: message.suggestion.affectedField,
-        message: `${message.suggestion.affectedField} has been updated.`,
-        timestamp: new Date()
+        message: `Edited ${message.suggestion.affectedField} saved successfully.`,
+        timestamp: new Date(),
+        actionType: 'edit'
       }]);
+
+      // Auto-dismiss after 5 seconds
+      setTimeout(() => {
+        setConfirmations(prev => prev.filter(c => c.id !== confirmationId));
+      }, 5000);
 
       // Exit editing mode
       setEditingMessageId(null);
@@ -455,12 +465,19 @@ What would you like to work on first?`,
                       window.dispatchEvent(updateEvent);
                       
                       // Add confirmation
-                      setConfirmations(prev => [...prev, {
-                        id: `confirm-${Date.now()}-${fieldName}`,
-                        fieldName,
-                        message: `${fieldName} has been updated.`,
-                        timestamp: new Date()
-                      }]);
+                       const confirmationId = `confirm-${Date.now()}-${fieldName}`;
+                       setConfirmations(prev => [...prev, {
+                         id: confirmationId,
+                         fieldName,
+                         message: `${fieldName} has been updated.`,
+                         timestamp: new Date(),
+                         actionType: 'replace'
+                       }]);
+
+                       // Auto-dismiss after 5 seconds
+                       setTimeout(() => {
+                         setConfirmations(prev => prev.filter(c => c.id !== confirmationId));
+                       }, 5000);
                       
                       setActionLoading(false);
                     }, 250);
@@ -485,12 +502,19 @@ What would you like to work on first?`,
                       });
                       window.dispatchEvent(updateEvent);
                       
-                      setConfirmations(prev => [...prev, {
-                        id: `confirm-${Date.now()}-${fieldName}`,
-                        fieldName,
-                        message: `${fieldName} has been updated (after edit).`,
-                        timestamp: new Date()
-                      }]);
+                       const confirmationId = `confirm-${Date.now()}-${fieldName}`;
+                       setConfirmations(prev => [...prev, {
+                         id: confirmationId,
+                         fieldName,
+                         message: `${fieldName} has been updated (after edit).`,
+                         timestamp: new Date(),
+                         actionType: 'edit'
+                       }]);
+
+                       // Auto-dismiss after 5 seconds
+                       setTimeout(() => {
+                         setConfirmations(prev => prev.filter(c => c.id !== confirmationId));
+                       }, 5000);
                       
                       setActionLoading(false);
                     }, 250);
@@ -531,29 +555,48 @@ What would you like to work on first?`,
           ))}
           
           {/* Confirmation Messages */}
-          {confirmations.map((confirmation) => (
-            <div key={confirmation.id} className="bg-green-50 border border-green-200 rounded-lg p-4 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
+          {confirmations.map((confirmation) => {
+            const getActionIcon = () => {
+              switch(confirmation.actionType) {
+                case 'edit': return '📝';
+                case 'cancel': return '✖️';
+                default: return '✅';
+              }
+            };
+
+            return (
+              <div key={confirmation.id} className="bg-green-50 border border-green-200 rounded-lg p-4 animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    </div>
+                    <span className="text-green-800 font-medium">
+                      {getActionIcon()} {confirmation.message}
+                    </span>
                   </div>
-                  <span className="text-green-800 font-medium">
-                    ✅ {confirmation.message}
-                  </span>
+                  
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setConfirmations(prev => prev.filter(c => c.id !== confirmation.id))}
+                      className="p-1 text-green-600 hover:text-green-800 hover:bg-green-200 rounded transition-colors"
+                      title="Dismiss"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={() => handleUndo(confirmation.id)}
+                      className="flex items-center gap-1 px-2 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                      title="Undo this change"
+                    >
+                      <Undo className="w-3 h-3" />
+                      Undo
+                    </button>
+                  </div>
                 </div>
-                
-                <button
-                  onClick={() => handleUndo(confirmation.id)}
-                  className="flex items-center gap-1 px-2 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
-                  title="Undo this change"
-                >
-                  <Undo className="w-3 h-3" />
-                  Undo
-                </button>
               </div>
-            </div>
-          ))}
+            );
+          })}
           
           {isTyping && (
             <div className="flex items-center gap-2 text-gray-500">
@@ -663,29 +706,48 @@ What would you like to work on first?`,
           ))}
           
           {/* Confirmation Messages */}
-          {confirmations.map((confirmation) => (
-            <div key={confirmation.id} className="bg-green-50 border border-green-200 rounded-lg p-4 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center">
-                    <div className="w-2 h-2 bg-white rounded-full"></div>
+          {confirmations.map((confirmation) => {
+            const getActionIcon = () => {
+              switch(confirmation.actionType) {
+                case 'edit': return '📝';
+                case 'cancel': return '✖️';
+                default: return '✅';
+              }
+            };
+
+            return (
+              <div key={confirmation.id} className="bg-green-50 border border-green-200 rounded-lg p-4 animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-5 h-5 bg-green-600 rounded-full flex items-center justify-center">
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    </div>
+                    <span className="text-green-800 font-medium">
+                      {getActionIcon()} {confirmation.message}
+                    </span>
                   </div>
-                  <span className="text-green-800 font-medium">
-                    ✅ {confirmation.message}
-                  </span>
+                  
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => setConfirmations(prev => prev.filter(c => c.id !== confirmation.id))}
+                      className="p-1 text-green-600 hover:text-green-800 hover:bg-green-200 rounded transition-colors"
+                      title="Dismiss"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={() => handleUndo(confirmation.id)}
+                      className="flex items-center gap-1 px-2 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                      title="Undo this change"
+                    >
+                      <Undo className="w-3 h-3" />
+                      Undo
+                    </button>
+                  </div>
                 </div>
-                
-                <button
-                  onClick={() => handleUndo(confirmation.id)}
-                  className="flex items-center gap-1 px-2 py-1 text-sm bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
-                  title="Undo this change"
-                >
-                  <Undo className="w-3 h-3" />
-                  Undo
-                </button>
               </div>
-            </div>
-          ))}
+            );
+          })}
           
           {isTyping && (
             <div className="flex items-center gap-2 text-gray-500">
