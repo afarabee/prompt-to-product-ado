@@ -181,17 +181,25 @@ What would you like to work on first?`,
   };
 
   const handleSuggestionAction = (action: 'replace' | 'edit' | 'cancel', message: Message) => {
+    // Remove the suggestion message immediately
+    setMessages(prev => prev.filter(msg => msg.id !== message.id));
+
     if (action === 'cancel') {
-      // Add cancellation message to chat
-      const cancellationMessage: Message = {
-        id: `cancel-${Date.now()}`,
-        content: `Change suggestion for ${message.suggestion?.affectedField} was canceled.`,
-        isUser: false,
+      // Add cancellation confirmation
+      const confirmationId = `cancel-${Date.now()}`;
+      setConfirmations(prev => [...prev, {
+        id: confirmationId,
+        fieldName: message.suggestion?.affectedField || 'Field',
+        message: `Suggestion dismissed.`,
         timestamp: new Date(),
-        messageType: 'cancellation',
-        canceled: true
-      };
-      setMessages(prev => [...prev, cancellationMessage]);
+        actionType: 'cancel'
+      }]);
+
+      // Auto-dismiss after 5 seconds
+      setTimeout(() => {
+        setConfirmations(prev => prev.filter(c => c.id !== confirmationId));
+      }, 5000);
+      
       return;
     }
 
