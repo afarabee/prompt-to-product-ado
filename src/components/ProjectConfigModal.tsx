@@ -12,6 +12,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger
 } from '@/components/ui/collapsible';
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -217,12 +223,12 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
                   id="custom-instructions"
                   value={config.customInstructions}
                   onChange={(e) => updateConfig({ customInstructions: e.target.value })}
-                  placeholder="Use active voice, avoid technical jargon, highlight user benefit..."
+                  placeholder="Use active voice, focus on user benefit, avoid technical jargon…"
                   rows={3}
                   className="resize-y"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
-                  Set rules or tone guidelines for how the AI should generate responses in this workspace.
+                  Optional. Set tone or formatting rules to guide how the AI generates responses.
                 </p>
               </div>
               
@@ -232,12 +238,12 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
                   id="preferences"
                   value={config.preferences}
                   onChange={(e) => updateConfig({ preferences: e.target.value })}
-                  placeholder="Set your team's default story format, estimation type, and tagging conventions..."
+                  placeholder="Define default story format, estimation type, tagging conventions…"
                   rows={3}
                   className="resize-y"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
-                  Set your team's default story format, estimation type, and tagging conventions.
+                  Optional. These defaults help streamline AI-generated content across your team.
                 </p>
               </div>
 
@@ -249,41 +255,69 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
                   onChange={(e) => updateConfig({ aiCommunicationStyle: e.target.value })}
                   className="w-full p-2 border border-input rounded-md bg-background"
                 >
-                  <option value="concise">Concise</option>
-                  <option value="collaborative">Collaborative</option>
-                  <option value="creative">Creative</option>
+                  <option value="concise">Concise – brief and to-the-point</option>
+                  <option value="collaborative">Collaborative – step-by-step with explanations</option>
+                  <option value="creative">Creative – idea-generating and exploratory</option>
                 </select>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Choose how the AI communicates when generating or refining content.
+                </p>
               </div>
 
-              <div className="space-y-3">
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={config.enableProactiveSuggestions}
-                    onChange={(e) => updateConfig({ enableProactiveSuggestions: e.target.checked })}
-                    className="rounded border-input"
-                  />
-                  <span className="text-sm">Enable Proactive Suggestions</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={config.autoHighlightChanges}
-                    onChange={(e) => updateConfig({ autoHighlightChanges: e.target.checked })}
-                    className="rounded border-input"
-                  />
-                  <span className="text-sm">Auto-highlight Affected Fields</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={config.enableAdvancedTechRecos}
-                    onChange={(e) => updateConfig({ enableAdvancedTechRecos: e.target.checked })}
-                    className="rounded border-input"
-                  />
-                  <span className="text-sm">Advanced Technical Recommendations</span>
-                </label>
-              </div>
+              <TooltipProvider>
+                <div className="space-y-3">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={config.enableProactiveSuggestions}
+                          onChange={(e) => updateConfig({ enableProactiveSuggestions: e.target.checked })}
+                          className="rounded border-input"
+                        />
+                        <span className="text-sm">Enable Proactive Suggestions</span>
+                      </label>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>AI will suggest changes automatically when input is detected.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={config.autoHighlightChanges}
+                          onChange={(e) => updateConfig({ autoHighlightChanges: e.target.checked })}
+                          className="rounded border-input"
+                        />
+                        <span className="text-sm">Auto-highlight Affected Fields</span>
+                      </label>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Visually indicate which fields are impacted by an AI suggestion.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <label className="flex items-center space-x-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={config.enableAdvancedTechRecos}
+                          onChange={(e) => updateConfig({ enableAdvancedTechRecos: e.target.checked })}
+                          className="rounded border-input"
+                        />
+                        <span className="text-sm">Advanced Technical Recommendations</span>
+                      </label>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Allow AI to suggest detailed or technical feature enhancements.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </div>
+              </TooltipProvider>
 
               <div>
                 <Label htmlFor="freeform-ai-prefs">AI Interaction Style (Free-form)</Label>
@@ -291,12 +325,12 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
                   id="freeform-ai-prefs"
                   value={config.freeformAiPrefs}
                   onChange={(e) => updateConfig({ freeformAiPrefs: e.target.value })}
-                  placeholder="Optional: How would you like the AI to interact with you?"
+                  placeholder="Optional: Describe your ideal interaction style…"
                   rows={3}
                   className="resize-y"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
-                  Optional: How would you like the AI to interact with you?
+                  Customize how you want the AI to engage with you — tone, pacing, or behavior.
                 </p>
               </div>
             </CollapsibleContent>
