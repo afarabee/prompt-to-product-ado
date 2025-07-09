@@ -35,6 +35,7 @@ interface ProjectConfig {
   projectDescription: string;
   customInstructions: string;
   preferences: string;
+  toneInteractionPreferences: string;
   aiCommunicationStyle: string;
   enableProactiveSuggestions: boolean;
   autoHighlightChanges: boolean;
@@ -51,11 +52,24 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
   
   const [config, setConfig] = useState<ProjectConfig>(() => {
     const saved = localStorage.getItem('project-config');
-    return saved ? JSON.parse(saved) : {
+    if (saved) {
+      const parsedConfig = JSON.parse(saved);
+      // Migrate old fields to new consolidated field if new field is empty
+      if (!parsedConfig.toneInteractionPreferences && (parsedConfig.customInstructions || parsedConfig.preferences || parsedConfig.freeformAiPrefs)) {
+        const migrationParts = [];
+        if (parsedConfig.customInstructions) migrationParts.push(`Tone & Formatting: ${parsedConfig.customInstructions}`);
+        if (parsedConfig.preferences) migrationParts.push(`Preferences: ${parsedConfig.preferences}`);
+        if (parsedConfig.freeformAiPrefs) migrationParts.push(`Interaction Style: ${parsedConfig.freeformAiPrefs}`);
+        parsedConfig.toneInteractionPreferences = migrationParts.join('\n\n');
+      }
+      return parsedConfig;
+    }
+    return {
       projectName: 'My Product Project',
       projectDescription: '',
       customInstructions: '',
       preferences: '',
+      toneInteractionPreferences: '',
       aiCommunicationStyle: 'collaborative',
       enableProactiveSuggestions: true,
       autoHighlightChanges: true,
@@ -218,29 +232,17 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-4 p-4 border-l-2 border-muted ml-3">
               <div>
-                <Label htmlFor="tone-formatting">Tone & Formatting Guidelines</Label>
+                <Label htmlFor="tone-interaction-preferences">Tone & Interaction Preferences</Label>
                 <Textarea
-                  id="tone-formatting"
-                  value={config.customInstructions}
-                  onChange={(e) => updateConfig({ customInstructions: e.target.value })}
-                  placeholder="Optional. Add style or formatting guidelines to shape how the AI writes — e.g., active voice, avoid jargon, emphasize benefits."
-                  rows={3}
-                  className="resize-y"
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="preferences">Preferences</Label>
-                <Textarea
-                  id="preferences"
-                  value={config.preferences}
-                  onChange={(e) => updateConfig({ preferences: e.target.value })}
-                  placeholder="Define default story format, estimation type, tagging conventions…"
-                  rows={3}
+                  id="tone-interaction-preferences"
+                  value={config.toneInteractionPreferences}
+                  onChange={(e) => updateConfig({ toneInteractionPreferences: e.target.value })}
+                  placeholder="E.g., use active voice, avoid jargon, emphasize benefits, keep it brief, ask before suggesting major edits..."
+                  rows={4}
                   className="resize-y"
                 />
                 <p className="text-sm text-muted-foreground mt-1">
-                  Optional. These defaults help streamline AI-generated content across your team.
+                  Optional. Combine tone, formatting, and interaction guidelines in one place to shape how the AI responds.
                 </p>
               </div>
 
@@ -306,21 +308,6 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
                     Allow the AI to suggest complex or domain-specific improvements when relevant.
                   </p>
                 </div>
-              </div>
-
-              <div>
-                <Label htmlFor="freeform-ai-prefs">AI Interaction Style (Free-form)</Label>
-                <Textarea
-                  id="freeform-ai-prefs"
-                  value={config.freeformAiPrefs}
-                  onChange={(e) => updateConfig({ freeformAiPrefs: e.target.value })}
-                  placeholder="Optional: Describe your ideal interaction style…"
-                  rows={3}
-                  className="resize-y"
-                />
-                <p className="text-sm text-muted-foreground mt-1">
-                  Customize how you want the AI to engage with you — tone, pacing, or behavior.
-                </p>
               </div>
             </CollapsibleContent>
           </Collapsible>
