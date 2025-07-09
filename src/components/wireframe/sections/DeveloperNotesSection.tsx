@@ -26,12 +26,6 @@ export const DeveloperNotesSection: React.FC<DeveloperNotesSectionProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
-  // Auto-generate notes when story is first generated (testing mode - always enabled)
-  useEffect(() => {
-    if (storyGenerated && !notes && storyData) {
-      handleGenerateNotes();
-    }
-  }, [storyGenerated, storyData]);
 
   const handleGenerateNotes = async () => {
     if (!storyData) {
