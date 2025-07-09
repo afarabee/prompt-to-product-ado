@@ -153,10 +153,10 @@ export const VersionHistoryPanel: React.FC<VersionHistoryPanelProps> = ({
     <>
       {/* Sidebar */}
       <div 
-        className={`fixed top-0 right-0 h-full bg-white shadow-lg transform transition-transform duration-300 z-60 ${
+        className={`fixed top-0 right-0 h-full bg-white shadow-lg transform transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
-        style={{ width: '480px' }}
+        style={{ width: '480px', zIndex: 9999 }}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b" style={{ backgroundColor: '#005AA7' }}>
@@ -250,7 +250,8 @@ export const VersionHistoryPanel: React.FC<VersionHistoryPanelProps> = ({
       {/* Overlay */}
       {isOpen && (
         <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-50"
+          className="fixed inset-0 bg-black bg-opacity-50"
+          style={{ zIndex: 9998 }}
           onClick={onClose}
         />
       )}
