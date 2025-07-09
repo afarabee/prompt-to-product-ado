@@ -6,11 +6,12 @@ import { RawInputSection } from '../sections/RawInputSection';
 import { GeneratedStorySection } from '../sections/GeneratedStorySection';
 import { ChatDrawer } from '../chat/ChatDrawer';
 import { GeneralChatDrawer } from '../chat/GeneralChatDrawer';
-import { VersionHistorySidebar } from '../sidebars/VersionHistorySidebar';
+import { VersionHistoryPanel } from '../panels/VersionHistoryPanel';
 import { UserManagementModal } from '../modals/UserManagementModal';
 import { ProjectConfigModal } from '@/components/ProjectConfigModal';
 
 import { StoryReviewPanel } from '../panels/StoryReviewPanel';
+import { versionHistoryService } from '../../../services/VersionHistoryService';
 
 export const AppLayout = () => {
   const [isInputCollapsed, setIsInputCollapsed] = useState(false);
@@ -52,6 +53,30 @@ export const AppLayout = () => {
   useEffect(() => {
     clearAllFields();
   }, [previewMode]);
+
+  // Initialize version history auto-save
+  useEffect(() => {
+    const getCurrentStoryData = () => ({
+      title: fieldValues.title,
+      description: fieldValues.description,
+      acceptanceCriteria: fieldValues.acceptanceCriteria,
+      storyPointEstimate: fieldValues.storyPointEstimate
+    });
+
+    versionHistoryService.startAutoSave(getCurrentStoryData);
+
+    return () => {
+      versionHistoryService.stopAutoSave();
+    };
+  }, []);
+
+  // Mark changes when field values update
+  useEffect(() => {
+    const hasContent = Object.values(fieldValues).some(value => value.trim().length > 0);
+    if (hasContent) {
+      versionHistoryService.markChanges();
+    }
+  }, [fieldValues]);
 
   // Handle AI field updates
   useEffect(() => {
@@ -242,6 +267,18 @@ export const AppLayout = () => {
   };
 
   const handleGenerateStory = () => {
+    // Save initial version
+    versionHistoryService.saveVersion(
+      {
+        title: "Enhanced User Management System",
+        description: "As a product owner, I want comprehensive user management functionality, including role assignments, permission controls, and mobile responsive interface so that I can efficiently manage team access across all devices.",
+        acceptanceCriteria: "• User can assign and modify roles for team members\n• System displays confirmation when permissions are updated\n• Interface adapts to mobile devices with touch-friendly controls\n• Admin can export user access reports in CSV format\n• All user management actions are logged for audit purposes",
+        storyPointEstimate: "5"
+      },
+      'initial-creation',
+      'Initial story generated'
+    );
+
     // Generate sample data in both Preview Mode ON and OFF
     setFieldValues(prev => ({
       ...prev,
@@ -259,6 +296,9 @@ export const AppLayout = () => {
   };
 
   const handleStartOver = () => {
+    // Clear version history for the current draft
+    versionHistoryService.clearVersions();
+    
     clearAllFields();
     // Reset layout to 2-column and close panels
     setIsInputCollapsed(false);
@@ -276,7 +316,10 @@ export const AppLayout = () => {
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: 'Arial, sans-serif' }}>
-      <AppHeader />
+      <AppHeader 
+        showVersionHistoryButton={storyGenerated}
+        onVersionHistoryClick={() => setShowVersionHistory(true)}
+      />
       
       <div className="flex items-center gap-4 p-4 border-b">
         <button
@@ -351,9 +394,21 @@ export const AppLayout = () => {
         onClose={() => setShowGeneralAIChat(false)}
       />
       
-      <VersionHistorySidebar 
+      <VersionHistoryPanel 
         isOpen={showVersionHistory}
         onClose={() => setShowVersionHistory(false)}
+        currentStoryData={{
+          title: fieldValues.title,
+          description: fieldValues.description,
+          acceptanceCriteria: fieldValues.acceptanceCriteria,
+          storyPointEstimate: fieldValues.storyPointEstimate
+        }}
+        onRestoreVersion={(versionData) => {
+          setFieldValues(prev => ({
+            ...prev,
+            ...versionData
+          }));
+        }}
       />
       
       <UserManagementModal
