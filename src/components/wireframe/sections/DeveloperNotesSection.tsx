@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { RefreshCw, Github, AlertCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { RefreshCw, Sparkles } from 'lucide-react';
 import { Button } from '../../ui/button';
 import { Textarea } from '../../ui/textarea';
 import { useToast } from '../../../hooks/use-toast';
@@ -26,6 +26,7 @@ export const DeveloperNotesSection: React.FC<DeveloperNotesSectionProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
+  const hasNotes = notes.trim().length > 0;
 
   const handleGenerateNotes = async () => {
     if (!storyData) {
@@ -47,8 +48,8 @@ export const DeveloperNotesSection: React.FC<DeveloperNotesSectionProps> = ({
       onNotesChange(mockNotes);
 
       toast({
-        title: "Developer notes generated",
-        description: "Notes have been updated with mock implementation guidance.",
+        title: hasNotes ? "Developer notes updated" : "Developer notes generated successfully",
+        description: hasNotes ? "Notes have been updated with new implementation guidance." : "Notes have been generated with mock implementation guidance.",
       });
     } catch (error) {
       console.error('Error generating notes:', error);
@@ -95,14 +96,17 @@ Impact Areas:
             onClick={handleGenerateNotes}
             disabled={isGenerating}
             className="flex items-center gap-2"
-            aria-label="Regenerate developer notes from GitHub"
+            aria-label={hasNotes ? "Update developer notes from GitHub" : "Generate developer notes from GitHub"}
+            title={hasNotes ? "Update the implementation guidance based on your latest story edits." : "Pull insights from your GitHub repo to help developers implement this story."}
           >
             {isGenerating ? (
               <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : hasNotes ? (
+              <RefreshCw className="w-4 h-4" />
             ) : (
-              <Github className="w-4 h-4" />
+              <Sparkles className="w-4 h-4" />
             )}
-            {isGenerating ? 'Generating...' : 'Regenerate Notes from GitHub'}
+            {isGenerating ? 'Generating...' : hasNotes ? 'Regenerate Notes from GitHub' : 'Generate Developer Notes from GitHub'}
           </Button>
         </div>
 
