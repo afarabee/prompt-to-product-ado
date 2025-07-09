@@ -218,18 +218,15 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
             </CollapsibleTrigger>
             <CollapsibleContent className="space-y-4 p-4 border-l-2 border-muted ml-3">
               <div>
-                <Label htmlFor="custom-instructions">Custom Instructions</Label>
+                <Label htmlFor="tone-formatting">Tone & Formatting Guidelines</Label>
                 <Textarea
-                  id="custom-instructions"
+                  id="tone-formatting"
                   value={config.customInstructions}
                   onChange={(e) => updateConfig({ customInstructions: e.target.value })}
-                  placeholder="Use active voice, focus on user benefit, avoid technical jargon…"
+                  placeholder="Optional. Add style or formatting guidelines to shape how the AI writes — e.g., active voice, avoid jargon, emphasize benefits."
                   rows={3}
                   className="resize-y"
                 />
-                <p className="text-sm text-muted-foreground mt-1">
-                  Optional. Set tone or formatting rules to guide how the AI generates responses.
-                </p>
               </div>
               
               <div>
@@ -253,14 +250,14 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
                   id="ai-communication-style"
                   value={config.aiCommunicationStyle}
                   onChange={(e) => updateConfig({ aiCommunicationStyle: e.target.value })}
-                  className="w-full p-2 border border-input rounded-md bg-background"
+                  className="w-full p-2 border border-input rounded-md bg-background text-foreground z-10 relative"
                 >
-                  <option value="concise">Concise – brief and to-the-point</option>
-                  <option value="collaborative">Collaborative – step-by-step with explanations</option>
-                  <option value="creative">Creative – idea-generating and exploratory</option>
+                  <option value="concise">Concise — Brief, to-the-point responses</option>
+                  <option value="collaborative">Collaborative — Explanatory and conversational</option>
+                  <option value="creative">Creative — Open-ended and idea-generating</option>
                 </select>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Choose how the AI communicates when generating or refining content.
+                  Choose how the AI communicates responses during generation and review.
                 </p>
               </div>
 
@@ -276,7 +273,7 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
                     <span className="text-sm">Enable Proactive Suggestions</span>
                   </label>
                   <p className="text-xs text-muted-foreground mt-1 ml-6">
-                    Let the AI offer unsolicited improvements or ideas, such as refining fields or suggesting next steps.
+                    Let the AI offer unsolicited ideas and improvements when generating or reviewing content.
                   </p>
                 </div>
                 
@@ -291,7 +288,7 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
                     <span className="text-sm">Auto-highlight Affected Fields</span>
                   </label>
                   <p className="text-xs text-muted-foreground mt-1 ml-6">
-                    Visually highlight fields that have been updated by the AI, so you can quickly see what changed.
+                    Highlight specific parts of the story that AI suggestions will impact.
                   </p>
                 </div>
                 
@@ -306,7 +303,7 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
                     <span className="text-sm">Advanced Technical Recommendations</span>
                   </label>
                   <p className="text-xs text-muted-foreground mt-1 ml-6">
-                    Include more technical detail in AI responses — helpful for development-focused teams.
+                    Allow the AI to suggest complex or domain-specific improvements when relevant.
                   </p>
                 </div>
               </div>
