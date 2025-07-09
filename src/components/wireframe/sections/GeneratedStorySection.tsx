@@ -2,7 +2,7 @@
 import React from 'react';
 import { StoryField } from '../fields/StoryField';
 import { ADOIntegrationSection } from './ADOIntegrationSection';
-import { Copy, RotateCcw } from 'lucide-react';
+import { Copy, RotateCcw, Clock } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface GeneratedStorySectionProps {
@@ -17,6 +17,7 @@ interface GeneratedStorySectionProps {
   onAcceptanceCriteriaChange: (value: string) => void;
   onStoryPointEstimateChange: (value: string) => void;
   onStartOver?: () => void;
+  onVersionHistoryClick?: () => void;
 }
 
 export const GeneratedStorySection: React.FC<GeneratedStorySectionProps> = ({ 
@@ -30,7 +31,8 @@ export const GeneratedStorySection: React.FC<GeneratedStorySectionProps> = ({
   onDescriptionChange,
   onAcceptanceCriteriaChange,
   onStoryPointEstimateChange,
-  onStartOver
+  onStartOver,
+  onVersionHistoryClick
 }) => {
   return (
     <TooltipProvider>
@@ -39,6 +41,23 @@ export const GeneratedStorySection: React.FC<GeneratedStorySectionProps> = ({
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold" style={{ color: '#002153' }}>Generated User Story</h2>
             <div className="flex items-center gap-2">
+              {storyGenerated && onVersionHistoryClick && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button 
+                      onClick={onVersionHistoryClick}
+                      className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100" 
+                      style={{ color: '#005AA7' }}
+                    >
+                      <Clock className="w-4 h-4" />
+                      <span className="text-sm font-medium">Version History</span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>View and restore previous versions</p>
+                  </TooltipContent>
+                </Tooltip>
+              )}
               {storyGenerated && onStartOver && (
                 <Tooltip>
                   <TooltipTrigger asChild>

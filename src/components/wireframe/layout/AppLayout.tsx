@@ -316,10 +316,7 @@ export const AppLayout = () => {
 
   return (
     <div className="min-h-screen bg-white" style={{ fontFamily: 'Arial, sans-serif' }}>
-      <AppHeader 
-        showVersionHistoryButton={storyGenerated}
-        onVersionHistoryClick={() => setShowVersionHistory(true)}
-      />
+      <AppHeader />
       
       <div className="flex items-center gap-4 p-4 border-b">
         <button
@@ -378,6 +375,7 @@ export const AppLayout = () => {
                 onAcceptanceCriteriaChange={(value) => handleFieldChange('acceptanceCriteria', value)}
                 onStoryPointEstimateChange={(value) => handleFieldChange('storyPointEstimate', value)}
                 onStartOver={handleStartOver}
+                onVersionHistoryClick={() => setShowVersionHistory(true)}
               />
             </div>
           </div>

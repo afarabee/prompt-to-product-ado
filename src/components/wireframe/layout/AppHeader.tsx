@@ -2,15 +2,7 @@
 import React from 'react';
 import { User, Settings, RotateCcw } from 'lucide-react';
 
-interface AppHeaderProps {
-  onVersionHistoryClick?: () => void;
-  showVersionHistoryButton?: boolean;
-}
-
-export const AppHeader: React.FC<AppHeaderProps> = ({ 
-  onVersionHistoryClick, 
-  showVersionHistoryButton = false 
-}) => {
+export const AppHeader = () => {
   return (
     <header className="h-16 flex items-center justify-between px-6 border-b-2" style={{ backgroundColor: '#002153', borderColor: '#808384' }}>
       <div className="flex items-center gap-4">
@@ -21,16 +13,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({
       </div>
       
       <div className="flex items-center gap-4">
-        {showVersionHistoryButton && (
-          <button 
-            onClick={onVersionHistoryClick}
-            className="flex items-center gap-2 px-3 py-2 rounded hover:bg-blue-800 text-white"
-            title="Version History"
-          >
-            <RotateCcw className="w-4 h-4" />
-            <span className="text-sm">Version History</span>
-          </button>
-        )}
         <div className="flex items-center gap-2 text-white">
           <User className="w-4 h-4" />
           <span className="text-sm">Product Owner</span>
