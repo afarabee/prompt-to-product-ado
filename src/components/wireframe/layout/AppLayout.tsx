@@ -45,7 +45,8 @@ export const AppLayout = () => {
     title: '',
     description: '',
     acceptanceCriteria: '',
-    storyPointEstimate: ''
+    storyPointEstimate: '',
+    developerNotes: ''
   });
 
 
@@ -254,7 +255,8 @@ export const AppLayout = () => {
       title: '',
       description: '',
       acceptanceCriteria: '',
-      storyPointEstimate: ''
+      storyPointEstimate: '',
+      developerNotes: ''
     });
     setStoryGenerated(false);
     setHighlightedField(null);
@@ -376,6 +378,8 @@ export const AppLayout = () => {
                 onStoryPointEstimateChange={(value) => handleFieldChange('storyPointEstimate', value)}
                 onStartOver={handleStartOver}
                 onVersionHistoryClick={() => setShowVersionHistory(true)}
+                developerNotes={fieldValues.developerNotes}
+                onDeveloperNotesChange={(value) => handleFieldChange('developerNotes', value)}
               />
             </div>
           </div>

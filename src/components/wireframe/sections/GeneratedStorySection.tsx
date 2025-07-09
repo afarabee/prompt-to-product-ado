@@ -2,6 +2,7 @@
 import React from 'react';
 import { StoryField } from '../fields/StoryField';
 import { ADOIntegrationSection } from './ADOIntegrationSection';
+import { DeveloperNotesSection } from './DeveloperNotesSection';
 import { Copy, RotateCcw, Clock } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -18,6 +19,8 @@ interface GeneratedStorySectionProps {
   onStoryPointEstimateChange: (value: string) => void;
   onStartOver?: () => void;
   onVersionHistoryClick?: () => void;
+  developerNotes: string;
+  onDeveloperNotesChange: (notes: string) => void;
 }
 
 export const GeneratedStorySection: React.FC<GeneratedStorySectionProps> = ({ 
@@ -32,7 +35,9 @@ export const GeneratedStorySection: React.FC<GeneratedStorySectionProps> = ({
   onAcceptanceCriteriaChange,
   onStoryPointEstimateChange,
   onStartOver,
-  onVersionHistoryClick
+  onVersionHistoryClick,
+  developerNotes,
+  onDeveloperNotesChange
 }) => {
   return (
     <TooltipProvider>
@@ -127,6 +132,18 @@ export const GeneratedStorySection: React.FC<GeneratedStorySectionProps> = ({
         </div>
 
         </div>
+        
+        <DeveloperNotesSection 
+          storyGenerated={storyGenerated}
+          storyData={storyGenerated ? {
+            title,
+            description,
+            acceptanceCriteria
+          } : undefined}
+          notes={developerNotes}
+          onNotesChange={onDeveloperNotesChange}
+          isGitHubConnected={false} // TODO: Get from project settings
+        />
         
         <ADOIntegrationSection 
           previewMode={previewMode} 
