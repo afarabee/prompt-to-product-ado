@@ -264,60 +264,52 @@ export const ProjectConfigModal: React.FC<ProjectConfigModalProps> = ({ isOpen, 
                 </p>
               </div>
 
-              <TooltipProvider>
-                <div className="space-y-3">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <label className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={config.enableProactiveSuggestions}
-                          onChange={(e) => updateConfig({ enableProactiveSuggestions: e.target.checked })}
-                          className="rounded border-input"
-                        />
-                        <span className="text-sm">Enable Proactive Suggestions</span>
-                      </label>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>AI will suggest changes automatically when input is detected.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <label className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={config.autoHighlightChanges}
-                          onChange={(e) => updateConfig({ autoHighlightChanges: e.target.checked })}
-                          className="rounded border-input"
-                        />
-                        <span className="text-sm">Auto-highlight Affected Fields</span>
-                      </label>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Visually indicate which fields are impacted by an AI suggestion.</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <label className="flex items-center space-x-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={config.enableAdvancedTechRecos}
-                          onChange={(e) => updateConfig({ enableAdvancedTechRecos: e.target.checked })}
-                          className="rounded border-input"
-                        />
-                        <span className="text-sm">Advanced Technical Recommendations</span>
-                      </label>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Allow AI to suggest detailed or technical feature enhancements.</p>
-                    </TooltipContent>
-                  </Tooltip>
+              <div className="space-y-4">
+                <div>
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={config.enableProactiveSuggestions}
+                      onChange={(e) => updateConfig({ enableProactiveSuggestions: e.target.checked })}
+                      className="rounded border-input"
+                    />
+                    <span className="text-sm">Enable Proactive Suggestions</span>
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-1 ml-6">
+                    Let the AI offer unsolicited improvements or ideas, such as refining fields or suggesting next steps.
+                  </p>
                 </div>
-              </TooltipProvider>
+                
+                <div>
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={config.autoHighlightChanges}
+                      onChange={(e) => updateConfig({ autoHighlightChanges: e.target.checked })}
+                      className="rounded border-input"
+                    />
+                    <span className="text-sm">Auto-highlight Affected Fields</span>
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-1 ml-6">
+                    Visually highlight fields that have been updated by the AI, so you can quickly see what changed.
+                  </p>
+                </div>
+                
+                <div>
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={config.enableAdvancedTechRecos}
+                      onChange={(e) => updateConfig({ enableAdvancedTechRecos: e.target.checked })}
+                      className="rounded border-input"
+                    />
+                    <span className="text-sm">Advanced Technical Recommendations</span>
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-1 ml-6">
+                    Include more technical detail in AI responses — helpful for development-focused teams.
+                  </p>
+                </div>
+              </div>
 
               <div>
                 <Label htmlFor="freeform-ai-prefs">AI Interaction Style (Free-form)</Label>
